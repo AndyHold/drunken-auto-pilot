@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory
+        android:title="@string/general_title"
+        android:summary="@string/general_summary">
+        <EditTextPreference
+            android:key="@string/name_key"
+            android:title="@string/name_title"
+            android:summary="@string/name_summary" />
+
+        <PreferenceScreen
+            android:key="@string/address_key"
+            android:title="@string/address_title"
+            android:summary="@string/address_summary">
+            <intent
+                android:action="android.intent.action.VIEW"
+                android:targetPackage="com.example.drunkenautopilot"
+                android:targetClass="com.example.drunkenautopilot.AddressPreference"/>
+        </PreferenceScreen>
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="@string/about_title"
+        android:summary="@string/about_summary">
+        <Preference
+            android:title="@string/app_version_title"
+            android:summary="@string/app_version_summary" />
+    </PreferenceCategory>
+</PreferenceScreen>
