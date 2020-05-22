@@ -25,13 +25,11 @@ class SplashScreen : Activity() {
 
         if (lat <= 90 && long <= 180 && name != null) {
             val intent = Intent(applicationContext, MainActivity::class.java)
-            intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY)
             Handler().postDelayed({
                 startActivity(intent)
             }, 2000)
         } else {
             val intent = Intent(applicationContext, SettingsActivity::class.java)
-            intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY)
             Handler().postDelayed({
                 startActivity(intent)
             }, 2000)
