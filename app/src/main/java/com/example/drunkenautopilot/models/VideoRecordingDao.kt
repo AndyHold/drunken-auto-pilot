@@ -1,12 +1,13 @@
 package com.example.drunkenautopilot.models
 
+import androidx.lifecycle.LiveData
 import androidx.room.*
 
 @Dao
 interface VideoRecordingDao {
 
     @Query("SELECT * FROM video_recording WHERE episodeId = :episodeId")
-    fun getVideoRecordingsForEpisode(episodeId: Long): List<VideoRecording>
+    fun getLiveVideoRecordingsForEpisode(episodeId: Long): LiveData<List<VideoRecording>>
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertVideoRecording(videoRecording: VideoRecording): Long
