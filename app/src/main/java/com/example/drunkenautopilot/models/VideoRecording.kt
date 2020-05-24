@@ -4,6 +4,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
+import java.sql.Timestamp
 
 @Entity(tableName = "video_recording",
     foreignKeys = [
@@ -15,5 +16,6 @@ import androidx.room.PrimaryKey
 data class VideoRecording(
     @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "video_recording_id") val id: Long,
     val episodeId: Long,
+    val timeTaken: Timestamp,
     val fileName: String
     )

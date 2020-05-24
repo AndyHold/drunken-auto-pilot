@@ -4,9 +4,11 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
 import com.example.drunkenautopilot.models.*
 
 @Database(entities = [Episode::class, VideoRecording::class, AudioRecording::class], version = 1, exportSchema = false)
+@TypeConverters(TimeStampConverters::class)
 public abstract class EpisodeRoomDatabase: RoomDatabase() {
 
     abstract fun episodeDao(): EpisodeDao

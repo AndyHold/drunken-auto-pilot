@@ -7,4 +7,5 @@
     <color name="error">#961919</color>
     <color name="success">#196419</color>
     <color name="transparent">#00000000</color>
+    <color name="titleColor">#DCDCDC</color>
 </resources>

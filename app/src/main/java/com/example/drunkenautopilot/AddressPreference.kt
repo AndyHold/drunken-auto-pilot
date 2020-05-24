@@ -4,6 +4,7 @@ import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
+import android.widget.Toast
 import androidx.fragment.app.FragmentActivity
 import androidx.preference.PreferenceManager
 import com.google.android.gms.common.api.Status
@@ -24,7 +25,7 @@ class AddressPreference : FragmentActivity(), OnMapReadyCallback {
     lateinit var map: GoogleMap
     lateinit var mapFragment: SupportMapFragment
     lateinit var autoCompleteFragment: AutocompleteSupportFragment
-    lateinit var currentAddress: Place
+    var currentAddress: Place? = null
     lateinit var settings: SharedPreferences
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -39,8 +40,13 @@ class AddressPreference : FragmentActivity(), OnMapReadyCallback {
         val submitButton: Button = findViewById(R.id.submit_address_button)
 
         submitButton.setOnClickListener {
-            saveAddress(currentAddress)
-            finish()
+            if (currentAddress != null) {
+                saveAddress(currentAddress!!)
+                finish()
+            }
+            else {
+                Toast.makeText(applicationContext, "Invalid Address, Please Try Again", Toast.LENGTH_SHORT).show()
+            }
         }
 
         // Initialize the AutocompleteSupportFragment.
@@ -74,6 +80,18 @@ class AddressPreference : FragmentActivity(), OnMapReadyCallback {
         val lat = settings.getFloat(resources.getString(R.string.address_latitude_key), 900f)
         val long = settings.getFloat(resources.getString(R.string.address_longitude_key), 900f)
         val name = settings.getString(resources.getString(R.string.address_name_key), null)
+        if (name != null) {
+            currentAddress = Place.builder()
+                .setName(name)
+                .setLatLng(
+                    LatLng(
+                        lat.toDouble(),
+                        long.toDouble()
+                    )
+                )
+                .build()
+        }
+
 
         Log.d("DrunkenAutoPilot", "Address: { name: $name, latLng: { lat: $lat, long: $long } }")
 
