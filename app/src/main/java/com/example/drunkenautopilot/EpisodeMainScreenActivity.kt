@@ -4,22 +4,26 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
-import android.widget.Button
+import android.widget.ImageButton
 import androidx.appcompat.app.AppCompatActivity
 
-class MainActivity : AppCompatActivity() {
-
+class EpisodeMainScreenActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        setContentView(R.layout.episode_main_screen)
 
         setSupportActionBar(findViewById(R.id.toolbar))
 
         supportActionBar?.openOptionsMenu()
-        val startEpisodeBtn: Button = findViewById(R.id.btn_start_an_episode)
-        startEpisodeBtn.setOnClickListener {
-            val intent = Intent(applicationContext, EpisodeMainScreenActivity::class.java)
-            startActivity(intent)
+        val startAudioButton: ImageButton = findViewById(R.id.btn_start_audio)
+        val startVideoButton: ImageButton = findViewById(R.id.btn_start_video)
+
+        startAudioButton.setOnClickListener {
+            // TODO: Start an Audio Recording
+        }
+
+        startVideoButton.setOnClickListener {
+            // TODO: Start a Video Recording
         }
     }
 
@@ -39,4 +43,5 @@ class MainActivity : AppCompatActivity() {
             super.onOptionsItemSelected(item)
         }
     }
+
 }

@@ -8,4 +8,5 @@
     <color name="success">#196419</color>
     <color name="transparent">#00000000</color>
     <color name="titleColor">#DCDCDC</color>
+    <color name="darkGrey">#292929</color>
 </resources>

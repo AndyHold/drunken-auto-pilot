@@ -36,4 +36,10 @@
     <string name="start_episode_btn">Get Me Home!</string>
 
 
+<!-- Episode Screen -->
+    <string name="start_audio">Tell Myself Something</string>
+    <string name="start_video">Show Myself Something</string>
+    <string name="distance_label">Distance till home</string>
+    <string name="steps_total">Steps so far</string>
+
 </resources>
