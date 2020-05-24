@@ -4,7 +4,7 @@
     <item
         android:id="@+id/action_settings"
         android:icon="@drawable/gear_spinner_foreground"
-        android:title="@string/action_settings"
+        android:title="@string/settings"
         app:showAsAction="never" />
 
     <!--TODO: Add video/audio options here-->

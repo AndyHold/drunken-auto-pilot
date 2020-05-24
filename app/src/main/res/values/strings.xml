@@ -31,5 +31,9 @@
     <string name="app_version_summary">Current version: 1.0</string>
 
     <string name="submit_address">Submit</string>
-    <string name="action_settings">Settings</string>
+
+<!--  Main Activity Strings -->
+    <string name="start_episode_btn">Get Me Home!</string>
+
+
 </resources>
