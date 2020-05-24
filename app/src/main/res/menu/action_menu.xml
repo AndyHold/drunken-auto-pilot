@@ -6,6 +6,11 @@
         android:icon="@drawable/gear_spinner_foreground"
         android:title="@string/settings"
         app:showAsAction="never" />
+    <item
+        android:id="@+id/view_episodes"
+        android:icon="@drawable/ic_home_black_24dp"
+        android:title="@string/settings"
+        app:showAsAction="never" />
 
     <!--TODO: Add video/audio options here-->
 </menu>
