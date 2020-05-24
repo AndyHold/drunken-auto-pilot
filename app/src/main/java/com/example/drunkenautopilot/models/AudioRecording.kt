@@ -5,7 +5,6 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
 import java.sql.Timestamp
-import java.time.LocalDate
 
 @Entity(tableName = "audio_recording",
     foreignKeys = [
