@@ -13,7 +13,7 @@ interface VideoRecordingDao {
     suspend fun insertVideoRecording(videoRecording: VideoRecording): Long
 
     @Query("DELETE FROM video_recording WHERE video_recording_id = :videoRecordingId")
-    fun deleteVideo(videoRecordingId: Long)
+    fun deleteVideoRecording(videoRecordingId: Long)
 
     @Update
     fun updateVideoRecordings(vararg videoRecordings: VideoRecording)
