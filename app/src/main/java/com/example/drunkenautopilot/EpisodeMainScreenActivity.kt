@@ -7,6 +7,10 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.graphics.Color
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
 import android.location.Location
 import android.location.LocationManager
 import android.os.Bundle
@@ -40,21 +44,22 @@ import com.google.android.libraries.places.api.model.Place
 import com.google.gson.Gson
 import org.json.JSONObject
 import kotlin.properties.Delegates
+const val PERMISSION_ID = 42
 
-
-class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback {
+class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListener {
+    private var moving = false
+    private var sensorManager: SensorManager? = null
     val episode = Episode() //TODO: update when steps are added.
-    lateinit var route: Route
-    lateinit var episodeViewModel: EpisodeViewModel
-    lateinit var routeViewModel: RouteViewModel
-    lateinit var map: GoogleMap
-    lateinit var mapFragment: SupportMapFragment
-    lateinit var destination: Place
-    lateinit var settings: SharedPreferences
-    lateinit var mFusedLocationClient: FusedLocationProviderClient
-    lateinit var distanceTextView: TextView
-    lateinit var stepsTextView: TextView
-    private val PERMISSION_ID = 42
+    private lateinit var route: Route
+    private lateinit var episodeViewModel: EpisodeViewModel
+    private lateinit var routeViewModel: RouteViewModel
+    private lateinit var map: GoogleMap
+    private lateinit var mapFragment: SupportMapFragment
+    private lateinit var destination: Place
+    private lateinit var settings: SharedPreferences
+    private lateinit var mFusedLocationClient: FusedLocationProviderClient
+    private lateinit var distanceTextView: TextView
+    private lateinit var stepsTextView: TextView
     var currentLocation: Location? by Delegates.observable<Location?>(null) { property, oldValue, newValue ->
         currentLocation?.let {
             displayPoint()
@@ -73,7 +78,8 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.episode_main_screen)
-        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+        sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        this.mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
         setSupportActionBar(findViewById(R.id.toolbar))
 
@@ -273,20 +279,8 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback {
         )
     }
 
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<String>,
-        grantResults: IntArray
-    ) {
-        if (requestCode == PERMISSION_ID) {
-            if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
-                // Granted. Start getting the location information
-            }
-        }
-    }
-
     private fun isLocationEnabled(): Boolean {
-        var locationManager: LocationManager =
+        val locationManager: LocationManager =
             getSystemService(Context.LOCATION_SERVICE) as LocationManager
         return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) || locationManager.isProviderEnabled(
             LocationManager.NETWORK_PROVIDER
@@ -299,7 +293,7 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback {
             if (isLocationEnabled()) {
 
                 mFusedLocationClient.lastLocation.addOnCompleteListener(this) { task ->
-                    var location: Location? = task.result
+                    val location: Location? = task.result
                     if (location == null) {
                         requestNewLocationData()
                     } else {
@@ -318,14 +312,14 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback {
 
     @SuppressLint("MissingPermission")
     private fun requestNewLocationData() {
-        var mLocationRequest = LocationRequest()
+        val mLocationRequest = LocationRequest()
         mLocationRequest.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
         mLocationRequest.interval = 0
         mLocationRequest.fastestInterval = 0
         mLocationRequest.numUpdates = 1
 
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
-        mFusedLocationClient!!.requestLocationUpdates(
+        mFusedLocationClient.requestLocationUpdates(
             mLocationRequest, mLocationCallback,
             Looper.myLooper()
         )
@@ -333,8 +327,37 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private val mLocationCallback = object : LocationCallback() {
         override fun onLocationResult(locationResult: LocationResult) {
-            var mLastLocation: Location = locationResult.lastLocation
+            val mLastLocation: Location = locationResult.lastLocation
             currentLocation = mLastLocation
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        moving = true
+        val stepsSensor = sensorManager?.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
+
+        if (stepsSensor == null) {
+            Toast.makeText(this, "No Step Counter Sensor !", Toast.LENGTH_SHORT).show()
+        } else {
+            sensorManager?.registerListener(this, stepsSensor, SensorManager.SENSOR_DELAY_UI)
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        moving = false
+        sensorManager?.unregisterListener(this)
+    }
+
+    override fun onAccuracyChanged(p0: Sensor?, p1: Int) {
+    }
+
+    override fun onSensorChanged(event: SensorEvent) {
+        if (moving) {
+            episode.steps = event.values[0].toInt()
+            episodeViewModel.update(episode)
+            stepsTextView.text = event.values[0].toInt().toString()
         }
     }
 }
