@@ -25,6 +25,7 @@ abstract class EpisodeRoomDatabase : RoomDatabase() {
     abstract fun videoRecordingDao(): VideoRecordingDao
     abstract fun audioRecordingDao(): AudioRecordingDao
     abstract fun routeDao(): RouteDao
+    abstract fun pointDao(): PointDao
 
     companion object {
         @Volatile

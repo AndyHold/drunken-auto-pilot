@@ -31,6 +31,7 @@ import com.example.drunkenautopilot.models.GoogleMapDTO
 import com.example.drunkenautopilot.models.Route
 import com.example.drunkenautopilot.viewModels.DirectionsViewModel
 import com.example.drunkenautopilot.viewModels.EpisodeViewModel
+import com.example.drunkenautopilot.viewModels.PointViewModel
 import com.example.drunkenautopilot.viewModels.RouteViewModel
 import com.google.android.gms.location.*
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -44,15 +45,17 @@ import com.google.android.libraries.places.api.model.Place
 import com.google.gson.Gson
 import org.json.JSONObject
 import kotlin.properties.Delegates
+
 const val PERMISSION_ID = 42
 
 class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListener {
     private var moving = false
     private var sensorManager: SensorManager? = null
-    val episode = Episode() //TODO: update when steps are added.
+    val episode = Episode()
     private lateinit var route: Route
     private lateinit var episodeViewModel: EpisodeViewModel
     private lateinit var routeViewModel: RouteViewModel
+    private lateinit var pointViewModel: PointViewModel
     private lateinit var map: GoogleMap
     private lateinit var mapFragment: SupportMapFragment
     private lateinit var destination: Place
@@ -64,8 +67,7 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback, Senso
         currentLocation?.let {
             displayPoint()
             newCurrentLocation(it)
-            route.addPoint(it)
-            routeViewModel.update(route)
+            pointViewModel.addPoint(it)
             Log.d(
                 "DrunkenAutoPilot",
                 "Location Updated: { latLng: { lat: ${it.latitude}, long: ${it.longitude} } }"
@@ -87,15 +89,32 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback, Senso
 
         episodeViewModel = EpisodeViewModel(application)
 
+        // Creates a new episode, route, and points view models along with
+        // instances of episode and route.
         episodeViewModel.insert(episode).invokeOnCompletion {
             if (it == null) {
                 Log.d(
-                "DrunkenAutoPilot",
-                "New Episode id is ${episode.id}"
-            )
+                    "DrunkenAutoPilot",
+                    "New Episode id is ${episode.id}"
+                )
                 routeViewModel = RouteViewModel(application, episode)
                 route = Route(episode.id)
-                routeViewModel.insert(route)
+                routeViewModel.insert(route).invokeOnCompletion {
+                    if (it == null) {
+                        Log.d(
+                            "DrunkenAutoPilot",
+                            "New Route id is ${route.id}"
+                        )
+                        pointViewModel = PointViewModel(application, route)
+                        getLastLocation()
+                    } else {
+                        Toast.makeText(
+                            this,
+                            "Failed to create new route",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
             } else {
                 Toast.makeText(
                     this,
@@ -148,7 +167,6 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback, Senso
             requestPermissions()
         }
 
-        getLastLocation()
         mainHandler.post(object : Runnable {
             override fun run() {
                 getLastLocation()

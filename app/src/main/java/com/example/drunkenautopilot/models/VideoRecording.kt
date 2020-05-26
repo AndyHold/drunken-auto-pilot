@@ -15,8 +15,8 @@ import java.util.*
             onDelete = ForeignKey.CASCADE)
     ])
 data class VideoRecording(
-    val episodeId: Long,
-    val fileName: String,
-    val timeTaken: Timestamp = Timestamp(Date().time),
+    var episodeId: Long,
+    var fileName: String,
+    var timeTaken: Timestamp = Timestamp(Date().time),
     @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "video_recording_id") var id: Long = 0
     )

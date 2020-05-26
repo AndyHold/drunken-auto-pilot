@@ -10,4 +10,4 @@ import java.util.*
 data class Episode(
     @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "episode_id") var id: Long = 0,
     var steps: Int = 0,
-    val date: Timestamp = Timestamp(Date().time))
+    var date: Timestamp = Timestamp(Date().time))
