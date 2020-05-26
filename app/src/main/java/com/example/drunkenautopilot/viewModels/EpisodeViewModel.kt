@@ -1,10 +1,12 @@
-package com.example.drunkenautopilot.repository
+package com.example.drunkenautopilot.viewModels
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.viewModelScope
 import com.example.drunkenautopilot.models.Episode
+import com.example.drunkenautopilot.repository.EpisodeRepository
+import com.example.drunkenautopilot.repository.EpisodeRoomDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -14,8 +16,11 @@ class EpisodeViewModel(application: Application) : AndroidViewModel(application)
     val allEpisodes: LiveData<List<Episode>>
 
     init {
-        val episodeDao = EpisodeRoomDatabase.getDatabase(application).episodeDao()
-        repository = EpisodeRepository(episodeDao)
+        val episodeDao = EpisodeRoomDatabase.getDatabase(
+            application
+        ).episodeDao()
+        repository =
+            EpisodeRepository(episodeDao)
         allEpisodes = repository.allEpisodes
     }
 

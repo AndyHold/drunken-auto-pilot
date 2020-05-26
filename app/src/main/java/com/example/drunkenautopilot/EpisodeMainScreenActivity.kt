@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
+import android.graphics.Color
 import android.location.Location
 import android.location.LocationManager
 import android.os.Bundle
@@ -16,10 +17,13 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.ImageButton
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.preference.PreferenceManager
+import com.example.drunkenautopilot.models.GoogleMapDTO
+import com.example.drunkenautopilot.viewModels.DirectionsViewModel
 import com.google.android.gms.location.*
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -27,7 +31,10 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.PolylineOptions
 import com.google.android.libraries.places.api.model.Place
+import com.google.gson.Gson
+import org.json.JSONObject
 import kotlin.properties.Delegates
 
 
@@ -37,10 +44,13 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback {
     lateinit var destination: Place
     lateinit var settings: SharedPreferences
     lateinit var mFusedLocationClient: FusedLocationProviderClient
+    lateinit var distanceTextView: TextView
+    lateinit var stepsTextView: TextView
     private val PERMISSION_ID = 42
     var currentLocation: Location? by Delegates.observable<Location?>(null) { property, oldValue, newValue ->
         currentLocation?.let {
-            newCurrentLocation(Place.builder().setName("here").setLatLng(LatLng(it.latitude, it.longitude)).build())
+            displayPoint()
+            newCurrentLocation(it)
             Log.d(
                 "DrunkenAutoPilot",
                 "Location Updated: { latLng: { lat: ${it.latitude}, long: ${it.longitude} } }"
@@ -48,6 +58,7 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
     val mainHandler = Handler(Looper.getMainLooper())
+    private lateinit var directionsViewModel: DirectionsViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -57,6 +68,9 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback {
         setSupportActionBar(findViewById(R.id.toolbar))
 
         supportActionBar?.openOptionsMenu()
+        distanceTextView = findViewById(R.id.distance_label)
+        stepsTextView = findViewById(R.id.total_steps_label)
+
         val startAudioButton: ImageButton = findViewById(R.id.btn_start_audio)
         val startVideoButton: ImageButton = findViewById(R.id.btn_start_video)
 
@@ -101,9 +115,62 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback {
         mainHandler.post(object : Runnable {
             override fun run() {
                 getLastLocation()
-                mainHandler.postDelayed(this, 10000)
+                mainHandler.postDelayed(this, 30000) // Updates location every 30 seconds.
             }
         })
+
+        directionsViewModel =
+            DirectionsViewModel(
+                application,
+                this
+            )
+    }
+
+    fun updateRoute(response: String) {
+        val responseAsJson = JSONObject(response)
+        val status = responseAsJson.getString("status")
+        if (status == "OK") {
+
+            val result = ArrayList<List<LatLng>>()
+
+            try {
+                val responseObject = Gson().fromJson(response, GoogleMapDTO::class.java)
+                val steps = responseObject.routes[0].legs[0].steps
+
+                val path = ArrayList<LatLng>()
+                for (i in steps.indices) {
+                    val startLatLng = LatLng(
+                        steps[i].end_location.lat.toDouble(),
+                        steps[i].start_location.lng.toDouble()
+                    )
+                    path.add(startLatLng)
+
+                    val endLatLng = LatLng(
+                        steps[i].end_location.lat.toDouble(),
+                        steps[i].start_location.lng.toDouble()
+                    )
+                    path.add(endLatLng)
+                }
+                result.add(path)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+            val route = responseAsJson.getJSONArray("routes").getJSONObject(0)
+            val leg = route.getJSONArray("legs").getJSONObject(0)
+
+            distanceTextView.text = leg.getJSONObject("distance").getString("text")
+
+            val lineOptions = PolylineOptions()
+            for (i in result.indices) {
+                lineOptions.addAll(result[i])
+                lineOptions.width(10f)
+                lineOptions.color(Color.BLUE)
+            }
+            map.addPolyline(lineOptions)
+        } else {
+            Toast.makeText(this, "Could not reach directions API", Toast.LENGTH_SHORT)
+                .show()
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -125,32 +192,40 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback {
 
     override fun onMapReady(googleMap: GoogleMap) {
         map = googleMap
+    }
 
-        if (destination.name != null) {
-            displayPoint(destination)
+    private fun displayPoint() {
+        if (currentLocation != null) {
+            map.clear()
+            map.addMarker(
+                MarkerOptions().title("You are here")
+                    .position(LatLng(currentLocation!!.latitude, currentLocation!!.longitude))
+            )
+            map.animateCamera(
+                CameraUpdateFactory.newLatLngZoom(
+                    LatLng(currentLocation!!.latitude, currentLocation!!.longitude),
+                    14f
+                )
+            )
         }
     }
 
-    private fun displayPoint(place: Place) {
-        map.clear()
-        map.addMarker(
-            MarkerOptions().title(place.name).position(place.latLng!!)
-        )
-        map.animateCamera(
-            CameraUpdateFactory.newLatLngZoom(
-                LatLng(place.latLng!!.latitude, place.latLng!!.longitude),
-                14f
-            )
-        )
-    }
-
-    private fun newCurrentLocation(place: Place) {
-//        TODO: Make a route home in here...
+    private fun newCurrentLocation(place: Location) {
+        destination.latLng?.let { destination ->
+            directionsViewModel.getDirections(location = place, destination = destination)
+        }
     }
 
     private fun checkPermissions(): Boolean {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
-            ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED){
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED &&
+            ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
             return true
         }
         return false
@@ -159,12 +234,19 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback {
     private fun requestPermissions() {
         ActivityCompat.requestPermissions(
             this,
-            arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION),
+            arrayOf(
+                Manifest.permission.ACCESS_COARSE_LOCATION,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ),
             PERMISSION_ID
         )
     }
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<String>,
+        grantResults: IntArray
+    ) {
         if (requestCode == PERMISSION_ID) {
             if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
                 // Granted. Start getting the location information
@@ -173,7 +255,8 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun isLocationEnabled(): Boolean {
-        var locationManager: LocationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        var locationManager: LocationManager =
+            getSystemService(Context.LOCATION_SERVICE) as LocationManager
         return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) || locationManager.isProviderEnabled(
             LocationManager.NETWORK_PROVIDER
         )

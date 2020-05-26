@@ -41,5 +41,6 @@
     <string name="start_video">Show Myself Something</string>
     <string name="distance_label">Distance till home</string>
     <string name="steps_total">Steps so far</string>
+    <string name="language">en</string>
 
 </resources>

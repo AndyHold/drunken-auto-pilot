@@ -1,10 +1,12 @@
-package com.example.drunkenautopilot.repository
+package com.example.drunkenautopilot.viewModels
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.viewModelScope
 import com.example.drunkenautopilot.models.VideoRecording
+import com.example.drunkenautopilot.repository.EpisodeRoomDatabase
+import com.example.drunkenautopilot.repository.VideoRecordingRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -14,8 +16,14 @@ class VideoRecordingViewModel(application: Application, episodeId: Long) : Andro
     val videoRecordings: LiveData<List<VideoRecording>>
 
     init {
-        val videoRecordingDao = EpisodeRoomDatabase.getDatabase(application).videoRecordingDao()
-        repository = VideoRecordingRepository(videoRecordingDao, episodeId)
+        val videoRecordingDao = EpisodeRoomDatabase.getDatabase(
+            application
+        ).videoRecordingDao()
+        repository =
+            VideoRecordingRepository(
+                videoRecordingDao,
+                episodeId
+            )
         videoRecordings = repository.allVideoRecordings
     }
 
