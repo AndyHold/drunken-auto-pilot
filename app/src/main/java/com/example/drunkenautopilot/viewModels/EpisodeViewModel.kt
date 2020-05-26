@@ -25,7 +25,7 @@ class EpisodeViewModel(application: Application) : AndroidViewModel(application)
     }
 
     fun insert(episode: Episode) = viewModelScope.launch(Dispatchers.IO) {
-        repository.insert(episode)
+        episode.id = repository.insert(episode)
     }
 
     fun update(episode: Episode) = viewModelScope.launch(Dispatchers.IO) {

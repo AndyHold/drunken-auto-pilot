@@ -1,5 +1,6 @@
 package com.example.drunkenautopilot.models
 
+import android.location.Location
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
@@ -16,13 +17,17 @@ import com.google.android.gms.maps.model.LatLng
         childColumns = ["points"])
 ])
 data class Route(
-    @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "route_id") val id: Long,
-    val episodeId: Long,
-    val points: List<Point>) {
+    var episodeId: Long = 0,
+    val points: ArrayList<Point> = ArrayList(),
+    @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "route_id") var id: Long = 0) {
 
     fun getLatLngs() : List<LatLng> {
         return points.map {
             it.getLatLng()
         }
+    }
+
+    fun addPoint(location: Location) {
+        points.add(Point(id, location.latitude, location.longitude))
     }
 }

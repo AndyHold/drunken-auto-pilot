@@ -6,6 +6,7 @@ import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
 import com.google.android.gms.maps.model.LatLng
 import java.sql.Timestamp
+import java.util.*
 
 @Entity(tableName = "point",
     foreignKeys = [
@@ -15,11 +16,11 @@ import java.sql.Timestamp
         onDelete = ForeignKey.CASCADE)
     ])
 data class Point(
-    @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "point_id") val id: Long,
     val routeId: Long,
     val lat: Double,
     val long: Double,
-    val timeTaken: Timestamp
+    val timeTaken: Timestamp = Timestamp(Date().time),
+    @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "point_id") var id: Long = 0
 ) {
     fun getLatLng(): LatLng {
         return LatLng(lat, long)

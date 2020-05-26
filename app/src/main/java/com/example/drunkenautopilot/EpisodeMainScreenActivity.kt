@@ -22,8 +22,12 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.preference.PreferenceManager
+import com.example.drunkenautopilot.models.Episode
 import com.example.drunkenautopilot.models.GoogleMapDTO
+import com.example.drunkenautopilot.models.Route
 import com.example.drunkenautopilot.viewModels.DirectionsViewModel
+import com.example.drunkenautopilot.viewModels.EpisodeViewModel
+import com.example.drunkenautopilot.viewModels.RouteViewModel
 import com.google.android.gms.location.*
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -39,6 +43,10 @@ import kotlin.properties.Delegates
 
 
 class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback {
+    val episode = Episode() //TODO: update when steps are added.
+    lateinit var route: Route
+    lateinit var episodeViewModel: EpisodeViewModel
+    lateinit var routeViewModel: RouteViewModel
     lateinit var map: GoogleMap
     lateinit var mapFragment: SupportMapFragment
     lateinit var destination: Place
@@ -51,6 +59,8 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback {
         currentLocation?.let {
             displayPoint()
             newCurrentLocation(it)
+            route.addPoint(it)
+            routeViewModel.update(route)
             Log.d(
                 "DrunkenAutoPilot",
                 "Location Updated: { latLng: { lat: ${it.latitude}, long: ${it.longitude} } }"
@@ -68,6 +78,27 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback {
         setSupportActionBar(findViewById(R.id.toolbar))
 
         supportActionBar?.openOptionsMenu()
+
+        episodeViewModel = EpisodeViewModel(application)
+
+        episodeViewModel.insert(episode).invokeOnCompletion {
+            if (it == null) {
+                Log.d(
+                "DrunkenAutoPilot",
+                "New Episode id is ${episode.id}"
+            )
+                routeViewModel = RouteViewModel(application, episode)
+                route = Route(episode.id)
+                routeViewModel.insert(route)
+            } else {
+                Toast.makeText(
+                    this,
+                    "Failed to create new episode",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
+
         distanceTextView = findViewById(R.id.distance_label)
         stepsTextView = findViewById(R.id.total_steps_label)
 
