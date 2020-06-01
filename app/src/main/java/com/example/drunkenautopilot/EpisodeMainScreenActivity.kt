@@ -2,10 +2,15 @@ package com.example.drunkenautopilot
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
+import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.hardware.Sensor
 import android.hardware.SensorEvent
@@ -15,18 +20,12 @@ import android.location.Location
 import android.location.LocationManager
 import android.media.MediaPlayer
 import android.media.MediaRecorder
-import android.os.Bundle
-import android.os.Environment
-import android.os.Handler
-import android.os.Looper
+import android.os.*
 import android.provider.Settings
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
-import android.widget.Button
-import android.widget.ImageButton
-import android.widget.TextView
-import android.widget.Toast
+import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -91,13 +90,17 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback, Senso
                 }
             }
 
+            createNotifications()
             if (getDistanceFromLatLonInMeters(currentLocation!!, destination.latLng!!) < 50.0) {
                 // If you are near home
                 episode?.isFinished = true
                 episode?.let { it1 -> episodeViewModel.update(it1) }
+
+//                createNotifications()
+
                 Toast.makeText(
                     applicationContext,
-                    "You are home! Well Done!!!",
+                    getString(R.string.notification_title),
                     Toast.LENGTH_SHORT
                 ).show()
 
@@ -113,6 +116,12 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback, Senso
     }
     val mainHandler = Handler(Looper.getMainLooper())
     private lateinit var directionsViewModel: DirectionsViewModel
+    // Notifications stuff
+    lateinit var notificationManager: NotificationManager
+    lateinit var notificationChannel: NotificationChannel
+    lateinit var builder: Notification.Builder
+    private val channelId = "i.apps.notifications"
+    private val description = "Test notification"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -121,6 +130,11 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback, Senso
         this.mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
         setSupportActionBar(findViewById(R.id.toolbar))
+
+
+        notificationManager = getSystemService(
+            Context.NOTIFICATION_SERVICE
+        ) as NotificationManager
 
         supportActionBar?.openOptionsMenu()
 
@@ -176,7 +190,7 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback, Senso
                                 } else {
                                     Toast.makeText(
                                         this,
-                                        "Failed to create new route",
+                                        getString(R.string.route_creation_failure),
                                         Toast.LENGTH_SHORT
                                     ).show()
                                     Log.e(
@@ -188,7 +202,7 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback, Senso
                         } else {
                             Toast.makeText(
                                 this,
-                                "Failed to create new episode",
+                                getString(R.string.episode_creation_failure),
                                 Toast.LENGTH_SHORT
                             ).show()
                             Log.e(
@@ -242,12 +256,13 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback, Senso
 
         cancelButton.setOnClickListener {
             AlertDialog.Builder(this)
-                .setTitle("Cancel navigation?")
-                .setMessage("Are you sure you would like to cancel? All route information will be deleted")
+                .setTitle(R.string.cancel_episode_title)
+                .setMessage(R.string.cancel_episode_content)
                 .setIcon(android.R.drawable.ic_dialog_alert)
                 .setPositiveButton(R.string.yes_cancel) { _, _ ->
                     finish()
-                    route = null // required for when the episode is cancelled just as the location is updated.
+                    route =
+                        null // required for when the episode is cancelled just as the location is updated.
                     episodeViewModel.delete(episode!!.id)
                 }
                 .setNegativeButton(R.string.no_go_home, null)
@@ -272,6 +287,52 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback, Senso
                 application,
                 this
             )
+    }
+
+    private fun createNotifications() {
+        val intent = Intent(this, ViewEpisodeActivity::class.java)
+        val pendingIntent = PendingIntent.getActivity(
+            this,
+            0, intent, PendingIntent.FLAG_UPDATE_CURRENT
+        )
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            notificationChannel = NotificationChannel(
+                channelId, description, NotificationManager.IMPORTANCE_HIGH
+            )
+            notificationChannel.enableLights(true)
+            notificationChannel.lightColor = Color.GREEN
+            notificationChannel.enableVibration(false)
+            notificationManager.createNotificationChannel(notificationChannel)
+
+            builder = Notification.Builder(this, channelId)
+                .setContentTitle(getString(R.string.notification_title))
+                .setContentText(getString(R.string.notification_content))
+                .setSmallIcon(R.drawable.ic_launcher_background)
+                .setLargeIcon(
+                    BitmapFactory.decodeResource(
+                        this.resources,
+                        R.drawable.ic_launcher_background
+                    )
+                )
+                .setContentIntent(pendingIntent)
+                .setAutoCancel(true)
+        } else {
+
+            builder = Notification.Builder(this)
+                .setContentTitle(getString(R.string.notification_title))
+                .setContentText(getString(R.string.notification_content))
+                .setSmallIcon(R.drawable.ic_launcher_background)
+                .setLargeIcon(
+                    BitmapFactory.decodeResource(
+                        this.resources,
+                        R.drawable.ic_launcher_background
+                    )
+                )
+                .setContentIntent(pendingIntent)
+                .setAutoCancel(true)
+        }
+        notificationManager.notify(1234, builder.build())
     }
 
     fun updateRoute(response: String) {
@@ -322,7 +383,7 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback, Senso
             )
             Toast.makeText(
                 this,
-                "Could not reach directions API",
+                getString(R.string.directions_api_failure),
                 Toast.LENGTH_SHORT
             ).show()
         }
@@ -353,7 +414,7 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback, Senso
         if (currentLocation != null) {
             map.clear()
             map.addMarker(
-                MarkerOptions().title("You are here")
+                MarkerOptions().title(getString(R.string.marker_title))
                     .position(LatLng(currentLocation!!.latitude, currentLocation!!.longitude))
             )
             map.animateCamera(
@@ -445,7 +506,7 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback, Senso
                     }
                 }
             } else {
-                Toast.makeText(this, "Please turn on location", Toast.LENGTH_LONG).show()
+                Toast.makeText(this, getString(R.string.turn_on_locations), Toast.LENGTH_LONG).show()
                 val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
                 startActivity(intent)
             }
@@ -482,7 +543,7 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback, Senso
         val stepsSensor = sensorManager?.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
 
         if (stepsSensor == null) {
-            Toast.makeText(this, "No Step Counter Sensor !", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, getString(R.string.no_step_counter), Toast.LENGTH_SHORT).show()
         } else {
             sensorManager?.registerListener(this, stepsSensor, SensorManager.SENSOR_DELAY_UI)
         }
@@ -531,7 +592,7 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback, Senso
         audioFilename = "${Date().time}.mp3"
         output = Environment.getExternalStorageDirectory().absolutePath + "/${audioFilename}"
 
-        File(output).parentFile.mkdirs()
+        File(output!!).parentFile?.mkdirs()
 
         mediaRecorder = MediaRecorder()
 
@@ -551,8 +612,8 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback, Senso
         }
 
         AlertDialog.Builder(this)
-            .setTitle("Recording")
-            .setMessage("You are now recording audio")
+            .setTitle(R.string.recording_title)
+            .setMessage(R.string.recording_message)
             .setIcon(R.drawable.ic_mic_black_24dp)
             .setPositiveButton(R.string.stop_recording) { _, _ ->
                 stopRecording()
@@ -563,7 +624,7 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback, Senso
 
                 Toast.makeText(
                     applicationContext,
-                    "Recording saved as $audioFilename",
+                    getString(R.string.recording_saved),
                     Toast.LENGTH_SHORT
                 ).show()
                 audioFilename = ""
@@ -571,12 +632,13 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback, Senso
             .setNegativeButton(R.string.cancel_recording) { _, _ ->
                 stopRecording()
 
-                val file = File(Environment.getExternalStorageDirectory().absolutePath + "/${audioFilename}")
+                val file =
+                    File(Environment.getExternalStorageDirectory().absolutePath + "/${audioFilename}")
                 println(file.delete())
 
                 Toast.makeText(
                     applicationContext,
-                    "Recording cancelled",
+                    getString(R.string.recording_cancelled),
                     Toast.LENGTH_SHORT
                 ).show()
             }

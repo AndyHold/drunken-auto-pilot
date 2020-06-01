@@ -32,6 +32,8 @@
 
     <string name="submit_address">Submit</string>
 
+    <string name="view_episodes">View All Episodes</string>
+
 <!--  Main Activity Strings -->
     <string name="start_episode_btn">Get Me Home!</string>
 
@@ -45,9 +47,24 @@
     <string name="cancel">Cancel</string>
     <string name="yes_cancel">Yes cancel</string>
     <string name="no_go_home">No, get me home!</string>
+    <string name="cancel_episode_title">Cancel Navigation?</string>
+    <string name="cancel_episode_content">Are you sure you would like to cancel? All route information will be deleted</string>
+    <string name="directions_api_failure">Could not reach directions API</string>
+    <string name="marker_title">You are here</string>
+    <string name="turn_on_locations">Please turn on location</string>
+    <string name="no_step_counter">No Step Counter Sensor!</string>
 
 <!-- Audio Recording -->
     <string name="stop_recording">Stop</string>
     <string name="cancel_recording">Cancel Audio Recording</string>
+    <string name="recording_title">Recording…</string>
+    <string name="recording_message">You are now recording audio</string>
+    <string name="recording_saved">Recording saved</string>
 
+<!-- Notifications -->
+    <string name="notification_title">Welcome Home!</string>
+    <string name="notification_content">Have a look at your journey</string>
+    <string name="route_creation_failure">Failed to create new route</string>
+    <string name="episode_creation_failure">Failed to create new episode</string>
+    <string name="recording_cancelled">Recording cancelled</string>
 </resources>

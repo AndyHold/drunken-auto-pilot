@@ -35,6 +35,12 @@ class MainActivity : AppCompatActivity() {
             true
         }
 
+        R.id.view_episodes -> {
+            val intent = Intent(applicationContext, ViewAllEpisodesActivity::class.java)
+            startActivity(intent)
+            true
+        }
+
         else -> {
             super.onOptionsItemSelected(item)
         }
