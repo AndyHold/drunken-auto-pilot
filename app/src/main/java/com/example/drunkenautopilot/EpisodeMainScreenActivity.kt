@@ -136,6 +136,50 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback, Senso
             Context.NOTIFICATION_SERVICE
         ) as NotificationManager
 
+
+        val intent = Intent(this, ViewEpisodeActivity::class.java)
+        val pendingIntent = PendingIntent.getActivity(
+            this,
+            0, intent, PendingIntent.FLAG_UPDATE_CURRENT
+        )
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            notificationChannel = NotificationChannel(
+                channelId, description, NotificationManager.IMPORTANCE_HIGH
+            )
+            notificationChannel.enableLights(true)
+            notificationChannel.lightColor = Color.GREEN
+            notificationChannel.enableVibration(false)
+            notificationManager.createNotificationChannel(notificationChannel)
+
+            builder = Notification.Builder(this, channelId)
+                .setContentTitle(getString(R.string.notification_title))
+                .setContentText(getString(R.string.notification_content))
+                .setSmallIcon(R.drawable.ic_launcher_background)
+                .setLargeIcon(
+                    BitmapFactory.decodeResource(
+                        this.resources,
+                        R.drawable.ic_launcher_background
+                    )
+                )
+                .setContentIntent(pendingIntent)
+                .setAutoCancel(true)
+        } else {
+
+            builder = Notification.Builder(this)
+                .setContentTitle(getString(R.string.notification_title))
+                .setContentText(getString(R.string.notification_content))
+                .setSmallIcon(R.drawable.ic_launcher_background)
+                .setLargeIcon(
+                    BitmapFactory.decodeResource(
+                        this.resources,
+                        R.drawable.ic_launcher_background
+                    )
+                )
+                .setContentIntent(pendingIntent)
+                .setAutoCancel(true)
+        }
+
         supportActionBar?.openOptionsMenu()
 
         episodeViewModel = ViewModelProvider(this).get(EpisodeViewModel::class.java)
@@ -290,48 +334,6 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback, Senso
     }
 
     private fun createNotifications() {
-        val intent = Intent(this, ViewEpisodeActivity::class.java)
-        val pendingIntent = PendingIntent.getActivity(
-            this,
-            0, intent, PendingIntent.FLAG_UPDATE_CURRENT
-        )
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            notificationChannel = NotificationChannel(
-                channelId, description, NotificationManager.IMPORTANCE_HIGH
-            )
-            notificationChannel.enableLights(true)
-            notificationChannel.lightColor = Color.GREEN
-            notificationChannel.enableVibration(false)
-            notificationManager.createNotificationChannel(notificationChannel)
-
-            builder = Notification.Builder(this, channelId)
-                .setContentTitle(getString(R.string.notification_title))
-                .setContentText(getString(R.string.notification_content))
-                .setSmallIcon(R.drawable.ic_launcher_background)
-                .setLargeIcon(
-                    BitmapFactory.decodeResource(
-                        this.resources,
-                        R.drawable.ic_launcher_background
-                    )
-                )
-                .setContentIntent(pendingIntent)
-                .setAutoCancel(true)
-        } else {
-
-            builder = Notification.Builder(this)
-                .setContentTitle(getString(R.string.notification_title))
-                .setContentText(getString(R.string.notification_content))
-                .setSmallIcon(R.drawable.ic_launcher_background)
-                .setLargeIcon(
-                    BitmapFactory.decodeResource(
-                        this.resources,
-                        R.drawable.ic_launcher_background
-                    )
-                )
-                .setContentIntent(pendingIntent)
-                .setAutoCancel(true)
-        }
         notificationManager.notify(1234, builder.build())
     }
 
