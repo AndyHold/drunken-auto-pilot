@@ -68,6 +68,19 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback, Senso
             displayPoint()
             newCurrentLocation(it)
             pointViewModel.addPoint(it)
+
+            if (getDistanceFromLatLonInMeters(currentLocation!!, destination.latLng!!) < 50.0) {
+                // If you are near home
+                episode.isFinished = true
+                episodeViewModel.update(episode)
+                Toast.makeText(
+                    applicationContext,
+                    "You are home! Well Done!!!",
+                    Toast.LENGTH_SHORT
+                ).show()
+                finish() // Return to home screen
+            }
+
             Log.d(
                 localClassName,
                 "Location Updated: { latLng: { lat: ${it.latitude}, long: ${it.longitude} } }"
@@ -392,5 +405,26 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback, Senso
             episodeViewModel.update(episode)
             stepsTextView.text = event.values[0].toInt().toString()
         }
+    }
+
+    fun getDistanceFromLatLonInMeters(firstPoint: Location, secondPoint: LatLng): Double {
+        val earthsRadius = 6371000
+        val latDifference = degreesToRadons(firstPoint.latitude - secondPoint.latitude)
+        val lonDifference = degreesToRadons(firstPoint.longitude - secondPoint.longitude)
+        val alpha =
+            Math.sin(latDifference / 2) * Math.sin(latDifference / 2) +
+                    Math.cos(degreesToRadons(firstPoint.latitude)) * Math.cos(
+                degreesToRadons(
+                    secondPoint.latitude
+                )
+            ) *
+                    Math.sin(lonDifference / 2) * Math.sin(lonDifference / 2)
+        val c = 2 * Math.atan2(Math.sqrt(alpha), Math.sqrt(1 - alpha))
+        val distance = earthsRadius * c
+        return distance
+    }
+
+    fun degreesToRadons(deg: Double): Double {
+        return deg * (Math.PI / 180)
     }
 }
