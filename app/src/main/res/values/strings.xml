@@ -67,4 +67,9 @@
     <string name="route_creation_failure">Failed to create new route</string>
     <string name="episode_creation_failure">Failed to create new episode</string>
     <string name="recording_cancelled">Recording cancelled</string>
+
+<!-- All Episodes -->
+    <string name="episode_date">Date Completed</string>
+    <string name="episode_steps">Number of Steps</string>
+
 </resources>
