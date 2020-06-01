@@ -25,14 +25,13 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import androidx.preference.PreferenceManager
 import com.example.drunkenautopilot.models.Episode
 import com.example.drunkenautopilot.models.GoogleMapDTO
 import com.example.drunkenautopilot.models.Route
-import com.example.drunkenautopilot.viewModels.DirectionsViewModel
-import com.example.drunkenautopilot.viewModels.EpisodeViewModel
-import com.example.drunkenautopilot.viewModels.PointViewModel
-import com.example.drunkenautopilot.viewModels.RouteViewModel
+import com.example.drunkenautopilot.viewModels.*
 import com.google.android.gms.location.*
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -51,7 +50,7 @@ const val PERMISSION_ID = 42
 class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListener {
     private var moving = false
     private var sensorManager: SensorManager? = null
-    val episode = Episode()
+    var episode: Episode? = null
     private lateinit var route: Route
     private lateinit var episodeViewModel: EpisodeViewModel
     private lateinit var routeViewModel: RouteViewModel
@@ -71,8 +70,8 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback, Senso
 
             if (getDistanceFromLatLonInMeters(currentLocation!!, destination.latLng!!) < 50.0) {
                 // If you are near home
-                episode.isFinished = true
-                episodeViewModel.update(episode)
+                episode?.isFinished = true
+                episode?.let { it1 -> episodeViewModel.update(it1) }
                 Toast.makeText(
                     applicationContext,
                     "You are home! Well Done!!!",
@@ -100,50 +99,95 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback, Senso
 
         supportActionBar?.openOptionsMenu()
 
-        episodeViewModel = EpisodeViewModel(application)
 
-        // Creates a new episode, route, and points view models along with
-        // instances of episode and route.
-        episodeViewModel.insert(episode).invokeOnCompletion {
-            if (it == null) {
-                Log.d(
-                    localClassName,
-                    "New Episode id is ${episode.id}"
-                )
-                routeViewModel = RouteViewModel(application, episode)
-                route = Route(episode.id)
-                routeViewModel.insert(route).invokeOnCompletion {
-                    if (it == null) {
-                        Log.d(
-                            localClassName,
-                            "New Route id is ${route.id}"
+        episodeViewModel = ViewModelProvider(this).get(EpisodeViewModel::class.java)
+
+        episodeViewModel.activeEpisode.observe(this, Observer { activeEpisode ->
+            if (activeEpisode != null) {
+                println("HEREEEEEEEEEEEEEEEEEEEEEEEEEEEEEE!")
+                episode = activeEpisode
+                routeViewModel = ViewModelProvider(
+                    this,
+                    RouteViewModelFactory(
+                        application,
+                        episode!!
+                    )
+                ).get(RouteViewModel::class.java)
+                routeViewModel.route.observe(this, Observer { currentRoute ->
+                    route = currentRoute
+                    pointViewModel = ViewModelProvider(
+                        this,
+                        PointViewModelFactory(
+                            application,
+                            route
                         )
-                        pointViewModel = PointViewModel(application, route)
-                        getLastLocation()
-                    } else {
-                        Toast.makeText(
-                            this,
-                            "Failed to create new route",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                        Log.e(
-                            localClassName,
-                            "Failed to create new route"
-                        )
+                    ).get(PointViewModel::class.java)
+                })
+            } else if (episode != null) {
+                episode = Episode()
+
+                // Creates a new episode, route, and points view models along with
+                // instances of episode and route.
+                episode?.let { episodeInstance ->
+                    episodeViewModel.insert(episodeInstance).invokeOnCompletion { episodeResult ->
+                        if (episodeResult == null) {
+                            Log.d(
+                                localClassName,
+                                "New Episode id is ${episode!!.id}"
+                            )
+                            routeViewModel = ViewModelProvider(
+                                this,
+                                RouteViewModelFactory(
+                                    application,
+                                    episode!!
+                                )
+                            ).get(RouteViewModel::class.java)
+
+                            // Make a new route for this episode.
+                            route = Route(episode!!.id)
+                            routeViewModel.insert(route).invokeOnCompletion { routeResult ->
+                                if (routeResult == null) {
+                                    Log.d(
+                                        localClassName,
+                                        "New Route id is ${route.id}"
+                                    )
+                                    pointViewModel = ViewModelProvider(
+                                        this,
+                                        PointViewModelFactory(
+                                            application,
+                                            route
+                                        )
+                                    ).get(PointViewModel::class.java)
+
+                                    getLastLocation()
+                                } else {
+                                    Toast.makeText(
+                                        this,
+                                        "Failed to create new route",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                    Log.e(
+                                        localClassName,
+                                        "Failed to create new route"
+                                    )
+                                }
+                            }
+                        } else {
+                            Toast.makeText(
+                                this,
+                                "Failed to create new episode",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            Log.e(
+                                localClassName,
+                                "Failed to create new episode"
+                            )
+                        }
                     }
                 }
-            } else {
-                Toast.makeText(
-                    this,
-                    "Failed to create new episode",
-                    Toast.LENGTH_SHORT
-                ).show()
-                Log.e(
-                    localClassName,
-                    "Failed to create new episode"
-                )
             }
-        }
+        })
+
 
         distanceTextView = findViewById(R.id.distance_label)
         stepsTextView = findViewById(R.id.total_steps_label)
@@ -401,8 +445,8 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback, Senso
 
     override fun onSensorChanged(event: SensorEvent) {
         if (moving) {
-            episode.steps = event.values[0].toInt()
-            episodeViewModel.update(episode)
+            episode?.steps = event.values[0].toInt()
+            episode?.let { episodeViewModel.update(it) }
             stepsTextView.text = event.values[0].toInt().toString()
         }
     }

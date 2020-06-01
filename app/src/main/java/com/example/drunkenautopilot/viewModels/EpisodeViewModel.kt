@@ -14,6 +14,7 @@ class EpisodeViewModel(application: Application) : AndroidViewModel(application)
 
     private val repository: EpisodeRepository
     val allEpisodes: LiveData<List<Episode>>
+    val activeEpisode: LiveData<Episode?>
 
     init {
         val episodeDao = EpisodeRoomDatabase.getDatabase(
@@ -22,6 +23,7 @@ class EpisodeViewModel(application: Application) : AndroidViewModel(application)
         repository =
             EpisodeRepository(episodeDao)
         allEpisodes = repository.allEpisodes
+        activeEpisode = repository.activeEpisode
     }
 
     fun insert(episode: Episode) = viewModelScope.launch(Dispatchers.IO) {

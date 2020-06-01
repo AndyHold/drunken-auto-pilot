@@ -9,8 +9,8 @@ interface EpisodeDao {
     @Query("SELECT * FROM episode ORDER BY date ASC")
     fun getAllEpisodes(): LiveData<List<Episode>>
 
-//    @Query("SELECT * FROM episode WHERE ")
-//    fun getActiveEpisode(): Episode
+    @Query("SELECT * FROM episode WHERE isFinished = 0")
+    fun getActiveEpisode(): LiveData<Episode?>
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(episode: Episode): Long

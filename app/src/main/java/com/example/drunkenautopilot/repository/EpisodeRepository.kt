@@ -7,6 +7,8 @@ class EpisodeRepository(private val episodeDao: EpisodeDao) {
 
     val allEpisodes = episodeDao.getAllEpisodes()
 
+    val activeEpisode = episodeDao.getActiveEpisode()
+
     suspend fun insert(episode: Episode): Long {
         return episodeDao.insert(episode)
     }
