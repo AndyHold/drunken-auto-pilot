@@ -234,6 +234,7 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback, Senso
         startAudioButton.setOnClickListener {
             if (!checkAudioRecordPersmissions()) {
                 requestAudioRecordPermissions()
+                startRecording()
             } else {
                 startRecording()
             }
@@ -393,10 +394,6 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback, Senso
             ActivityCompat.checkSelfPermission(
                 this,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE
-            ) == PackageManager.PERMISSION_GRANTED &&
-            ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.READ_EXTERNAL_STORAGE
             ) == PackageManager.PERMISSION_GRANTED
         ) {
             return true
@@ -420,8 +417,7 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback, Senso
             this,
             arrayOf(
                 Manifest.permission.RECORD_AUDIO,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                Manifest.permission.READ_EXTERNAL_STORAGE
+                Manifest.permission.WRITE_EXTERNAL_STORAGE
             ),
             PERMISSION_ID
         )
@@ -534,6 +530,9 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback, Senso
         // Start audio recording here
         audioFilename = "${Date().time}.mp3"
         output = Environment.getExternalStorageDirectory().absolutePath + "/${audioFilename}"
+
+        File(output).parentFile.mkdirs()
+
         mediaRecorder = MediaRecorder()
 
         mediaRecorder?.setAudioSource(MediaRecorder.AudioSource.MIC)
@@ -554,7 +553,7 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback, Senso
         AlertDialog.Builder(this)
             .setTitle("Recording")
             .setMessage("You are now recording audio")
-            .setIcon(android.R.drawable.ic_dialog_info)
+            .setIcon(R.drawable.ic_mic_black_24dp)
             .setPositiveButton(R.string.stop_recording) { _, _ ->
                 stopRecording()
 
@@ -573,7 +572,7 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback, Senso
                 stopRecording()
 
                 val file = File(Environment.getExternalStorageDirectory().absolutePath + "/${audioFilename}")
-                file.delete()
+                println(file.delete())
 
                 Toast.makeText(
                     applicationContext,
