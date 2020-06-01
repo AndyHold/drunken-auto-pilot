@@ -10,7 +10,6 @@ import com.example.drunkenautopilot.models.*
 @Database(
     entities = [
         Episode::class,
-        VideoRecording::class,
         AudioRecording::class,
         Route::class,
         Point::class
@@ -22,7 +21,6 @@ import com.example.drunkenautopilot.models.*
 abstract class EpisodeRoomDatabase : RoomDatabase() {
 
     abstract fun episodeDao(): EpisodeDao
-    abstract fun videoRecordingDao(): VideoRecordingDao
     abstract fun audioRecordingDao(): AudioRecordingDao
     abstract fun routeDao(): RouteDao
     abstract fun pointDao(): PointDao
