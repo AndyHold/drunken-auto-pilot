@@ -18,7 +18,6 @@ import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.location.Location
 import android.location.LocationManager
-import android.media.MediaPlayer
 import android.media.MediaRecorder
 import android.os.*
 import android.provider.Settings
@@ -53,15 +52,19 @@ import java.io.IOException
 import java.lang.IllegalStateException
 import java.util.*
 import kotlin.collections.ArrayList
+import kotlin.math.atan2
+import kotlin.math.cos
+import kotlin.math.sin
+import kotlin.math.sqrt
 import kotlin.properties.Delegates
 
-const val PERMISSION_ID = 42
+const val LOCATION_PERMISSION_ID = 42
+const val RECORDING_PERMISSION_ID = 42
 
 class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListener {
     // Audio recorder stuff
     private var output: String? = null
     private var mediaRecorder: MediaRecorder? = null
-    private var mediaPlayer: MediaPlayer? = null
     private var recording: Boolean = false
     private var audioFilename = ""
     //----------------------
@@ -117,9 +120,9 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback, Senso
     val mainHandler = Handler(Looper.getMainLooper())
     private lateinit var directionsViewModel: DirectionsViewModel
     // Notifications stuff
-    lateinit var notificationManager: NotificationManager
-    lateinit var notificationChannel: NotificationChannel
-    lateinit var builder: Notification.Builder
+    private lateinit var notificationManager: NotificationManager
+    private lateinit var notificationChannel: NotificationChannel
+    private lateinit var builder: Notification.Builder
     private val channelId = "i.apps.notifications"
     private val description = "Test notification"
 
@@ -292,7 +295,6 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback, Senso
         startAudioButton.setOnClickListener {
             if (!checkAudioRecordPersmissions()) {
                 requestAudioRecordPermissions()
-                startRecording()
             } else {
                 startRecording()
             }
@@ -471,7 +473,7 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback, Senso
                 Manifest.permission.ACCESS_COARSE_LOCATION,
                 Manifest.permission.ACCESS_FINE_LOCATION
             ),
-            PERMISSION_ID
+            LOCATION_PERMISSION_ID
         )
     }
 
@@ -482,7 +484,7 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback, Senso
                 Manifest.permission.RECORD_AUDIO,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE
             ),
-            PERMISSION_ID
+            RECORDING_PERMISSION_ID
         )
     }
 
@@ -568,28 +570,27 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback, Senso
         }
     }
 
-    fun getDistanceFromLatLonInMeters(firstPoint: Location, secondPoint: LatLng): Double {
+    private fun getDistanceFromLatLonInMeters(firstPoint: Location, secondPoint: LatLng): Double {
         val earthsRadius = 6371000
-        val latDifference = degreesToRadons(firstPoint.latitude - secondPoint.latitude)
-        val lonDifference = degreesToRadons(firstPoint.longitude - secondPoint.longitude)
+        val latDifference = degreesToRadians(firstPoint.latitude - secondPoint.latitude)
+        val lonDifference = degreesToRadians(firstPoint.longitude - secondPoint.longitude)
         val alpha =
-            Math.sin(latDifference / 2) * Math.sin(latDifference / 2) +
-                    Math.cos(degreesToRadons(firstPoint.latitude)) * Math.cos(
-                degreesToRadons(
+            sin(latDifference / 2) * sin(latDifference / 2) +
+                    cos(degreesToRadians(firstPoint.latitude)) * cos(
+                degreesToRadians(
                     secondPoint.latitude
                 )
             ) *
-                    Math.sin(lonDifference / 2) * Math.sin(lonDifference / 2)
-        val c = 2 * Math.atan2(Math.sqrt(alpha), Math.sqrt(1 - alpha))
-        val distance = earthsRadius * c
-        return distance
+                    sin(lonDifference / 2) * sin(lonDifference / 2)
+        val c = 2 * atan2(sqrt(alpha), sqrt(1 - alpha))
+        return earthsRadius * c
     }
 
-    fun degreesToRadons(deg: Double): Double {
+    private fun degreesToRadians(deg: Double): Double {
         return deg * (Math.PI / 180)
     }
 
-    fun startRecording() {
+    private fun startRecording() {
         // Start audio recording here
         audioFilename = "${Date().time}.mp3"
         output = Environment.getExternalStorageDirectory().absolutePath + "/${audioFilename}"
@@ -647,7 +648,7 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback, Senso
             .show()
     }
 
-    fun stopRecording() {
+    private fun stopRecording() {
         if (recording) {
             mediaRecorder?.stop()
             mediaRecorder?.release()
