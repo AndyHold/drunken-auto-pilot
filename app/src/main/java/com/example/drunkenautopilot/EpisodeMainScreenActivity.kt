@@ -3,7 +3,6 @@ package com.example.drunkenautopilot
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
-import android.content.DialogInterface
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
@@ -14,7 +13,10 @@ import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.location.Location
 import android.location.LocationManager
+import android.media.MediaPlayer
+import android.media.MediaRecorder
 import android.os.Bundle
+import android.os.Environment
 import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
@@ -30,8 +32,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelStore
 import androidx.preference.PreferenceManager
+import com.example.drunkenautopilot.models.AudioRecording
 import com.example.drunkenautopilot.models.Episode
 import com.example.drunkenautopilot.models.GoogleMapDTO
 import com.example.drunkenautopilot.models.Route
@@ -47,18 +49,31 @@ import com.google.android.gms.maps.model.PolylineOptions
 import com.google.android.libraries.places.api.model.Place
 import com.google.gson.Gson
 import org.json.JSONObject
+import java.io.File
+import java.io.IOException
+import java.lang.IllegalStateException
+import java.util.*
+import kotlin.collections.ArrayList
 import kotlin.properties.Delegates
 
 const val PERMISSION_ID = 42
 
 class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback, SensorEventListener {
+    // Audio recorder stuff
+    private var output: String? = null
+    private var mediaRecorder: MediaRecorder? = null
+    private var mediaPlayer: MediaPlayer? = null
+    private var recording: Boolean = false
+    private var audioFilename = ""
+    //----------------------
     private var moving = false
     private var sensorManager: SensorManager? = null
     var episode: Episode? = null
-    private lateinit var route: Route
+    private var route: Route? = null
     private lateinit var episodeViewModel: EpisodeViewModel
     private var routeViewModel: RouteViewModel? = null
     private var pointViewModel: PointViewModel? = null
+    private var audioRecordingViewModel: AudioRecordingViewModel? = null
     private lateinit var map: GoogleMap
     private lateinit var mapFragment: SupportMapFragment
     private lateinit var destination: Place
@@ -70,8 +85,11 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback, Senso
         currentLocation?.let {
             displayPoint()
             newCurrentLocation(it)
-            pointViewModel?.let{ pvm ->
-                pvm.addPoint(it, route.id)}
+            pointViewModel?.let { pvm ->
+                if (route != null) {
+                    pvm.addPoint(it, route!!.id)
+                }
+            }
 
             if (getDistanceFromLatLonInMeters(currentLocation!!, destination.latLng!!) < 50.0) {
                 // If you are near home
@@ -82,6 +100,8 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback, Senso
                     "You are home! Well Done!!!",
                     Toast.LENGTH_SHORT
                 ).show()
+
+
                 finish() // Return to home screen
             }
 
@@ -105,10 +125,7 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback, Senso
         supportActionBar?.openOptionsMenu()
 
         episodeViewModel = ViewModelProvider(this).get(EpisodeViewModel::class.java)
-
-        episodeViewModel.allEpisodes.observe(this, Observer { yo ->
-            println("CurrentEpisodes: ${yo.size}")
-        })
+        audioRecordingViewModel = ViewModelProvider(this).get(AudioRecordingViewModel::class.java)
 
         episodeViewModel.activeEpisode.observe(this, Observer { activeEpisode ->
             if (activeEpisode != null) {
@@ -145,11 +162,11 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback, Senso
 
                             // Make a new route for this episode.
                             route = Route(episode!!.id)
-                            routeViewModel?.insert(route)?.invokeOnCompletion { routeResult ->
+                            routeViewModel?.insert(route!!)?.invokeOnCompletion { routeResult ->
                                 if (routeResult == null) {
                                     Log.d(
                                         localClassName,
-                                        "New Route id is ${route.id}"
+                                        "New Route id is ${route!!.id}"
                                     )
                                     pointViewModel = ViewModelProvider(
                                         this
@@ -189,7 +206,6 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback, Senso
         stepsTextView = findViewById(R.id.total_steps_label)
 
         val startAudioButton: ImageButton = findViewById(R.id.btn_start_audio)
-        val startVideoButton: ImageButton = findViewById(R.id.btn_start_video)
         val cancelButton: Button = findViewById(R.id.btn_cancel)
 
         settings = PreferenceManager.getDefaultSharedPreferences(applicationContext)
@@ -216,11 +232,11 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback, Senso
         }
 
         startAudioButton.setOnClickListener {
-            // TODO: Start an Audio Recording
-        }
-
-        startVideoButton.setOnClickListener {
-            // TODO: Start a Video Recording
+            if (!checkAudioRecordPersmissions()) {
+                requestAudioRecordPermissions()
+            } else {
+                startRecording()
+            }
         }
 
         cancelButton.setOnClickListener {
@@ -228,8 +244,9 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback, Senso
                 .setTitle("Cancel navigation?")
                 .setMessage("Are you sure you would like to cancel? All route information will be deleted")
                 .setIcon(android.R.drawable.ic_dialog_alert)
-                .setPositiveButton(R.string.yes_cancel) { dialog, whichButton ->
+                .setPositiveButton(R.string.yes_cancel) { _, _ ->
                     finish()
+                    route = null // required for when the episode is cancelled just as the location is updated.
                     episodeViewModel.delete(episode!!.id)
                 }
                 .setNegativeButton(R.string.no_go_home, null)
@@ -238,8 +255,8 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback, Senso
 
         mapFragment.getMapAsync(this)
 
-        if (!checkPermissions()) {
-            requestPermissions()
+        if (!checkLocationPermissions()) {
+            requestLocationPermissions()
         }
 
         mainHandler.post(object : Runnable {
@@ -353,7 +370,7 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback, Senso
         }
     }
 
-    private fun checkPermissions(): Boolean {
+    private fun checkLocationPermissions(): Boolean {
         if (ActivityCompat.checkSelfPermission(
                 this,
                 Manifest.permission.ACCESS_COARSE_LOCATION
@@ -368,12 +385,43 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback, Senso
         return false
     }
 
-    private fun requestPermissions() {
+    private fun checkAudioRecordPersmissions(): Boolean {
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.RECORD_AUDIO
+            ) == PackageManager.PERMISSION_GRANTED &&
+            ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE
+            ) == PackageManager.PERMISSION_GRANTED &&
+            ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.READ_EXTERNAL_STORAGE
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
+            return true
+        }
+        return false
+    }
+
+    private fun requestLocationPermissions() {
         ActivityCompat.requestPermissions(
             this,
             arrayOf(
                 Manifest.permission.ACCESS_COARSE_LOCATION,
                 Manifest.permission.ACCESS_FINE_LOCATION
+            ),
+            PERMISSION_ID
+        )
+    }
+
+    private fun requestAudioRecordPermissions() {
+        ActivityCompat.requestPermissions(
+            this,
+            arrayOf(
+                Manifest.permission.RECORD_AUDIO,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                Manifest.permission.READ_EXTERNAL_STORAGE
             ),
             PERMISSION_ID
         )
@@ -389,7 +437,7 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback, Senso
 
     @SuppressLint("MissingPermission")
     private fun getLastLocation() {
-        if (checkPermissions()) {
+        if (checkLocationPermissions()) {
             if (isLocationEnabled()) {
 
                 mFusedLocationClient.lastLocation.addOnCompleteListener(this) { task ->
@@ -406,7 +454,7 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback, Senso
                 startActivity(intent)
             }
         } else {
-            requestPermissions()
+            requestLocationPermissions()
         }
     }
 
@@ -480,5 +528,68 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback, Senso
 
     fun degreesToRadons(deg: Double): Double {
         return deg * (Math.PI / 180)
+    }
+
+    fun startRecording() {
+        // Start audio recording here
+        audioFilename = "${Date().time}.mp3"
+        output = Environment.getExternalStorageDirectory().absolutePath + "/${audioFilename}"
+        mediaRecorder = MediaRecorder()
+
+        mediaRecorder?.setAudioSource(MediaRecorder.AudioSource.MIC)
+        mediaRecorder?.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
+        mediaRecorder?.setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
+        mediaRecorder?.setOutputFile(output)
+
+        try {
+            mediaRecorder?.prepare()
+            mediaRecorder?.start()
+            recording = true
+        } catch (e: IllegalStateException) {
+            e.printStackTrace()
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+
+        AlertDialog.Builder(this)
+            .setTitle("Recording")
+            .setMessage("You are now recording audio")
+            .setIcon(android.R.drawable.ic_dialog_info)
+            .setPositiveButton(R.string.stop_recording) { _, _ ->
+                stopRecording()
+
+                val audioRecording = AudioRecording(audioFilename, episode!!.id)
+
+                audioRecordingViewModel?.insert(audioRecording)
+
+                Toast.makeText(
+                    applicationContext,
+                    "Recording saved as $audioFilename",
+                    Toast.LENGTH_SHORT
+                ).show()
+                audioFilename = ""
+            }
+            .setNegativeButton(R.string.cancel_recording) { _, _ ->
+                stopRecording()
+
+                val file = File(Environment.getExternalStorageDirectory().absolutePath + "/${audioFilename}")
+                file.delete()
+
+                Toast.makeText(
+                    applicationContext,
+                    "Recording cancelled",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+            .show()
+    }
+
+    fun stopRecording() {
+        if (recording) {
+            mediaRecorder?.stop()
+            mediaRecorder?.release()
+            mediaRecorder = null
+            recording = false
+        }
     }
 }

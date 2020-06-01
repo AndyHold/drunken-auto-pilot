@@ -46,4 +46,8 @@
     <string name="yes_cancel">Yes cancel</string>
     <string name="no_go_home">No, get me home!</string>
 
+<!-- Audio Recording -->
+    <string name="stop_recording">Stop</string>
+    <string name="cancel_recording">Cancel Audio Recording</string>
+
 </resources>

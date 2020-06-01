@@ -1,11 +1,14 @@
 package com.example.drunkenautopilot.repository
 
+import androidx.lifecycle.LiveData
 import com.example.drunkenautopilot.models.AudioRecording
 import com.example.drunkenautopilot.models.AudioRecordingDao
 
-class AudioRecordingRepository(private val audioRecordingDao: AudioRecordingDao, val episodeId: Long) {
+class AudioRecordingRepository(private val audioRecordingDao: AudioRecordingDao) {
 
-    val allAudioRecordings = audioRecordingDao.getLiveAudioRecordingsForEpisode(episodeId)
+    fun allAudioRecordings(episodeId: Long) : LiveData<List<AudioRecording>> {
+        return audioRecordingDao.getLiveAudioRecordingsForEpisode(episodeId)
+    }
 
     suspend fun insert(audioRecording: AudioRecording) {
         audioRecordingDao.insertAudioRecording(audioRecording)

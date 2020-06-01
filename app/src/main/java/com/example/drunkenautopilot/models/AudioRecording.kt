@@ -14,7 +14,7 @@ import java.util.*
             childColumns = ["episodeId"],
             onDelete = ForeignKey.CASCADE)
     ])
-data class AudioRecording(
+data class AudioRecording (
     var fileName: String,
     var episodeId: Long,
     var timeTaken: Timestamp = Timestamp(Date().time),

@@ -10,21 +10,22 @@ import com.example.drunkenautopilot.repository.EpisodeRoomDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-class AudioRecordingViewModel(application: Application, episodeId: Long) : AndroidViewModel(application) {
+class AudioRecordingViewModel(application: Application) : AndroidViewModel(application) {
 
     private val repository: AudioRecordingRepository
-    val audioRecordings: LiveData<List<AudioRecording>>
 
     init {
         val audioRecordingDao = EpisodeRoomDatabase.getDatabase(
             application
         ).audioRecordingDao()
         repository =
-            AudioRecordingRepository(
-                audioRecordingDao,
-                episodeId
+            AudioRecordingRepository (
+                audioRecordingDao
             )
-        audioRecordings = repository.allAudioRecordings
+    }
+
+    fun getAudioRecordings(episodeId: Long): LiveData<List<AudioRecording>> {
+        return repository.allAudioRecordings(episodeId)
     }
 
     fun insert(audioRecording: AudioRecording) = viewModelScope.launch(Dispatchers.IO) {

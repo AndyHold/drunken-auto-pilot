@@ -7,18 +7,18 @@
 
     <Button
         android:id="@+id/btn_cancel"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"
-        android:layout_marginEnd="16dp"
         android:text="@string/cancel"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <LinearLayout
+        android:id="@+id/linearLayout"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:orientation="vertical"
         android:padding="16dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -45,6 +45,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
+                android:orientation="vertical"
                 android:padding="8dp">
 
                 <TextView
@@ -64,7 +65,7 @@
             </LinearLayout>
 
             <View
-                android:id="@+id/divider4"
+                android:id="@+id/divider"
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
                 android:background="?android:attr/listDivider" />
@@ -73,6 +74,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
+                android:orientation="vertical"
                 android:padding="8dp">
 
                 <TextView
@@ -88,15 +90,17 @@
                     android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:textSize="16dp" />
-            </LinearLayout>
-        </LinearLayout>
 
-        <ImageButton
-            android:id="@+id/btn_start_audio"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_weight="3"
-            app:srcCompat="@drawable/ic_mic_black_24dp" />
+            </LinearLayout>
+
+            <ImageButton
+                android:id="@+id/btn_start_audio"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                app:srcCompat="@drawable/ic_mic_black_24dp" />
+
+        </LinearLayout>
 
     </LinearLayout>
 
