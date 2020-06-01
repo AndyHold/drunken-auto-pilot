@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Piloto Automático Borracho</string>
+    <string name="title_home">La Página Principal</string>
+    <string name="title_dashboard">El Tablero de Control</string>
+    <string name="title_notifications">Notificaciónes</string>
+    <string name="loading">Cargando…</string>
+
+    <!--  Preference Strings  -->
+    <string name="settings">Configuraciónes</string>
+
+    <string name="general_title">Configuraciónes General</string>
+    <string name="general_summary">Para abrir la configuración general de la aplicación</string>
+
+    <string name="name_title">Nombre</string>
+    <string name="name_summary">Ingrese su nombre aquí</string>
+
+    <string name="address_key">pref_address</string>
+    <string name="address_title">La Dirección</string>
+    <string name="address_summary">Elige la dirección de tu casa</string>
+
+    <string name="about_title">Acerca de la aplicación</string>
+    <string name="about_summary">Versión de la aplicación</string>
+
+    <string name="app_version_title">Versión de la aplicación</string>
+    <string name="app_version_summary">Versión actual: 1.0</string>
+
+    <string name="submit_address">Entregar</string>
+
+    <string name="view_episodes">Ver todos los episodios</string>
+
+    <!--  Main Activity Strings -->
+    <string name="start_episode_btn">¡Conéteme a Casa!</string>
+
+
+    <!-- Episode Screen -->
+    <string name="start_audio">Cuéntame algo</string>
+    <string name="distance_label">Distancia hasta casa</string>
+    <string name="steps_total">Pasos hasta ahora</string>
+    <string name="language">es</string>
+    <string name="cancel">Cancelar</string>
+    <string name="yes_cancel">Sí, cancel</string>
+    <string name="no_go_home">No, ¡Conéteme a Casa!</string>
+    <string name="cancel_episode_title">¿Cancelar Navegación?</string>
+    <string name="cancel_episode_content">¿Está seguro de que le gustaría cancelar? Toda la información de la ruta se eliminará</string>
+    <string name="directions_api_failure">No se pudo llegar a la API de direcciones</string>
+    <string name="marker_title">Estás aquí</string>
+    <string name="turn_on_locations">Por favor, active la ubicación</string>
+    <string name="no_step_counter">¡Sin sensor de contador de pasos!</string>
+
+    <!-- Audio Recording -->
+    <string name="stop_recording">Parar</string>
+    <string name="cancel_recording">Cancelar grabación de audio</string>
+    <string name="recording_title">Grabación…</string>
+    <string name="recording_message">Ahora está grabando audio</string>
+    <string name="recording_saved">Grabación guardada</string>
+
+    <!-- Notifications -->
+    <string name="notification_title">¡Bienvenido a Casa!</string>
+    <string name="notification_content">Echa un vistazo a tu viaje</string>
+    <string name="route_creation_failure">No se pudo crear una nueva ruta</string>
+    <string name="episode_creation_failure">No se pudo crear un nuevo episodio</string>
+    <string name="recording_cancelled">Grabación cancelada</string>
+
+    <!-- All Episodes -->
+    <string name="episode_date">Fecha de finalización</string>
+    <string name="episode_steps">Número de pasos</string>
+</resources>

@@ -33,7 +33,8 @@ class SplashScreen : AppCompatActivity(), ViewModelStoreOwner {
         val animation = AnimationUtils.loadAnimation(this, R.anim.infinite_rotate)
         findViewById<ImageView>(R.id.iv_loadingIcon).startAnimation(animation)
 
-        val settings: SharedPreferences = PreferenceManager.getDefaultSharedPreferences(applicationContext)
+        val settings: SharedPreferences =
+            PreferenceManager.getDefaultSharedPreferences(applicationContext)
         val lat = settings.getFloat(resources.getString(R.string.address_latitude_key), 900f)
         val long = settings.getFloat(resources.getString(R.string.address_longitude_key), 900f)
         val name = settings.getString(resources.getString(R.string.address_name_key), null)
@@ -50,12 +51,13 @@ class SplashScreen : AppCompatActivity(), ViewModelStoreOwner {
             if (!hasSettings) {
                 val intent = Intent(applicationContext, SettingsActivity::class.java)
                 startActivity(intent)
-            } else if (activeEpisode == null){
+//            } else if (activeEpisode == null){
+            } else {
                 val intent = Intent(applicationContext, MainActivity::class.java)
                 startActivity(intent)
-            } else {
-                val intent = Intent(applicationContext, EpisodeMainScreenActivity::class.java)
-                startActivity(intent)
+//            } else {
+//                val intent = Intent(applicationContext, EpisodeMainScreenActivity::class.java)
+//                startActivity(intent)
             }
         }, 2000)
         super.onResume()

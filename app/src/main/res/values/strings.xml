@@ -13,7 +13,7 @@
     <string name="general_title">General Settings</string>
     <string name="general_summary">Open general settings of the app</string>
 
-    <string name="name_key">pref_name</string>
+    <string name="name_key" translatable="false">pref_name</string>
     <string name="name_title">Name</string>
     <string name="name_summary">Enter your name here</string>
 
@@ -40,7 +40,6 @@
 
 <!-- Episode Screen -->
     <string name="start_audio">Tell Myself Something</string>
-    <string name="start_video">Show Myself Something</string>
     <string name="distance_label">Distance till home</string>
     <string name="steps_total">Steps so far</string>
     <string name="language">en</string>
