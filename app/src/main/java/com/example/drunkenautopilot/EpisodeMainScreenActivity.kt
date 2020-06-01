@@ -99,12 +99,13 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback, Senso
 
         supportActionBar?.openOptionsMenu()
 
-
         episodeViewModel = ViewModelProvider(this).get(EpisodeViewModel::class.java)
 
         episodeViewModel.activeEpisode.observe(this, Observer { activeEpisode ->
             if (activeEpisode != null) {
-                println("HEREEEEEEEEEEEEEEEEEEEEEEEEEEEEEE!")
+                if (episode != null && episode?.id != activeEpisode.id) {
+                    episodeViewModel.delete(episode!!.id)
+                }
                 episode = activeEpisode
                 routeViewModel = ViewModelProvider(
                     this,
