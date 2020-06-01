@@ -95,15 +95,15 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback, Senso
                 // If you are near home
                 episode?.isFinished = true
                 episode?.let { it1 -> episodeViewModel.update(it1) }
+                mainHandler.removeCallbacksAndMessages(null) // stop all future updates
 
-//                createNotifications()
+                createNotifications()
 
                 Toast.makeText(
                     applicationContext,
                     getString(R.string.notification_title),
                     Toast.LENGTH_SHORT
                 ).show()
-
 
                 finish() // Return to home screen
             }
