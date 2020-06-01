@@ -9,7 +9,6 @@ import com.example.drunkenautopilot.EpisodeMainScreenActivity
 import com.example.drunkenautopilot.R
 import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.BufferedInputStream

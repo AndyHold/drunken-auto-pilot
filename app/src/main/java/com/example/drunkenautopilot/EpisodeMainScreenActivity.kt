@@ -69,7 +69,7 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback, Senso
             newCurrentLocation(it)
             pointViewModel.addPoint(it)
             Log.d(
-                "DrunkenAutoPilot",
+                localClassName,
                 "Location Updated: { latLng: { lat: ${it.latitude}, long: ${it.longitude} } }"
             )
         }
@@ -94,7 +94,7 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback, Senso
         episodeViewModel.insert(episode).invokeOnCompletion {
             if (it == null) {
                 Log.d(
-                    "DrunkenAutoPilot",
+                    localClassName,
                     "New Episode id is ${episode.id}"
                 )
                 routeViewModel = RouteViewModel(application, episode)
@@ -102,7 +102,7 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback, Senso
                 routeViewModel.insert(route).invokeOnCompletion {
                     if (it == null) {
                         Log.d(
-                            "DrunkenAutoPilot",
+                            localClassName,
                             "New Route id is ${route.id}"
                         )
                         pointViewModel = PointViewModel(application, route)
@@ -113,6 +113,10 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback, Senso
                             "Failed to create new route",
                             Toast.LENGTH_SHORT
                         ).show()
+                        Log.e(
+                            localClassName,
+                            "Failed to create new route"
+                        )
                     }
                 }
             } else {
@@ -121,6 +125,10 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback, Senso
                     "Failed to create new episode",
                     Toast.LENGTH_SHORT
                 ).show()
+                Log.e(
+                    localClassName,
+                    "Failed to create new episode"
+                )
             }
         }
 
@@ -138,7 +146,7 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback, Senso
         val name = settings.getString(resources.getString(R.string.address_name_key), null)
 
         Log.d(
-            "DrunkenAutoPilot",
+            localClassName,
             "Address Loaded: { name: $name, latLng: { lat: $lat, long: $long } }"
         )
         if (name != null) {
@@ -223,8 +231,15 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback, Senso
             }
             map.addPolyline(lineOptions)
         } else {
-            Toast.makeText(this, "Could not reach directions API", Toast.LENGTH_SHORT)
-                .show()
+            Log.d(
+                localClassName,
+                response
+            )
+            Toast.makeText(
+                this,
+                "Could not reach directions API",
+                Toast.LENGTH_SHORT
+            ).show()
         }
     }
 

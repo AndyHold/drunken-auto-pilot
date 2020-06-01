@@ -43,17 +43,27 @@ class AddressPreference : FragmentActivity(), OnMapReadyCallback {
             if (currentAddress != null) {
                 saveAddress(currentAddress!!)
                 finish()
-            }
-            else {
-                Toast.makeText(applicationContext, "Invalid Address, Please Try Again", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(
+                    applicationContext,
+                    "Invalid Address, Please Try Again",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         }
 
         // Initialize the AutocompleteSupportFragment.
-        autoCompleteFragment = supportFragmentManager.findFragmentById(R.id.address_auto_complete) as AutocompleteSupportFragment
+        autoCompleteFragment =
+            supportFragmentManager.findFragmentById(R.id.address_auto_complete) as AutocompleteSupportFragment
 
         // Specify the types of place data to return.
-        autoCompleteFragment.setPlaceFields(listOf(Place.Field.NAME, Place.Field.LAT_LNG, Place.Field.ADDRESS))
+        autoCompleteFragment.setPlaceFields(
+            listOf(
+                Place.Field.NAME,
+                Place.Field.LAT_LNG,
+                Place.Field.ADDRESS
+            )
+        )
 
         // Set up a PlaceSelectionListener to handle the response.
         autoCompleteFragment.setOnPlaceSelectedListener(object : PlaceSelectionListener {
@@ -64,11 +74,17 @@ class AddressPreference : FragmentActivity(), OnMapReadyCallback {
                 currentAddress = place
 
                 saveAddress(place)
-                Log.i("DrunkenAutoPilot", "Place: { address: ${place.name}, latLng: ${place.latLng} }")
+                Log.d(
+                    localClassName,
+                    "Place: { address: ${place.name}, latLng: ${place.latLng} }"
+                )
             }
 
             override fun onError(status: Status) {
-                Log.i("DrunkenAutoPilot", "An error occurred: $status")
+                Log.e(
+                    localClassName,
+                    "An error occurred: $status"
+                )
             }
         })
 
@@ -93,7 +109,10 @@ class AddressPreference : FragmentActivity(), OnMapReadyCallback {
         }
 
 
-        Log.d("DrunkenAutoPilot", "Address: { name: $name, latLng: { lat: $lat, long: $long } }")
+        Log.d(
+            localClassName,
+            "Address: { name: $name, latLng: { lat: $lat, long: $long } }"
+        )
 
         if (lat <= 90 && long <= 180 && name != null) {
             displayPoint(LatLng(lat.toDouble(), long.toDouble()), name)
@@ -106,7 +125,9 @@ class AddressPreference : FragmentActivity(), OnMapReadyCallback {
         map.animateCamera(
             CameraUpdateFactory.newLatLngZoom(
                 LatLng(latLng.latitude, latLng.longitude),
-                14f))
+                14f
+            )
+        )
     }
 
     private fun saveAddress(place: Place) {
@@ -114,13 +135,16 @@ class AddressPreference : FragmentActivity(), OnMapReadyCallback {
 
         editor.putFloat(
             resources.getString(R.string.address_latitude_key),
-            place.latLng!!.latitude.toFloat())
+            place.latLng!!.latitude.toFloat()
+        )
         editor.putFloat(
             resources.getString(R.string.address_longitude_key),
-            place.latLng!!.longitude.toFloat())
+            place.latLng!!.longitude.toFloat()
+        )
         editor.putString(
             resources.getString(R.string.address_name_key),
-            place.name)
+            place.name
+        )
         editor.apply()
     }
 }
