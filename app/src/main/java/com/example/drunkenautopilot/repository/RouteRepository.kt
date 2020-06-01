@@ -5,12 +5,13 @@ import com.example.drunkenautopilot.models.Episode
 import com.example.drunkenautopilot.models.Route
 import com.example.drunkenautopilot.models.RouteDao
 
-class RouteRepository(private val routeDao: RouteDao, private val episode: Episode) {
+class RouteRepository(private val routeDao: RouteDao) {
 
-    val getRoute: LiveData<Route> = routeDao.getRoute(episode.id)
+    fun getRoute(episodeId: Long): LiveData<Route> {
+        return routeDao.getRoute(episodeId)
+    }
 
     suspend fun insert(route: Route): Long {
-        route.episodeId = episode.id
         return routeDao.insert(route)
     }
 

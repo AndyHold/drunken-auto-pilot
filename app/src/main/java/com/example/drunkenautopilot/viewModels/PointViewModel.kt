@@ -14,24 +14,25 @@ import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-class PointViewModel(application: Application, val route: Route) : AndroidViewModel(application) {
+class PointViewModel(application: Application) : AndroidViewModel(application) {
 
     private val repository: PointRepository
-    val points: LiveData<List<Point>>
 
     init {
         val pointDao = EpisodeRoomDatabase.getDatabase(
             application
         ).pointDao()
         repository = PointRepository(
-            pointDao,
-            route
+            pointDao
         )
-        points = repository.getPointsForRoute
     }
 
-    fun addPoint(location: Location) {
-        val point = Point(location.latitude, location.longitude, route.id)
+    fun getPoints(routeId: Long): LiveData<List<Point>> {
+        return repository.getPointsForRoute(routeId)
+    }
+
+    fun addPoint(location: Location, routeId: Long) {
+        val point = Point(location.latitude, location.longitude, routeId)
         insert(point).invokeOnCompletion {
             Log.d(
                 "DrunkenAutoPilot",
@@ -42,11 +43,5 @@ class PointViewModel(application: Application, val route: Route) : AndroidViewMo
 
     private fun insert(point: Point) = viewModelScope.launch(Dispatchers.IO) {
         point.id = repository.insert(point)
-    }
-
-    fun getLatLngs() : List<LatLng> {
-        return points.value?.map {
-            LatLng(it.latitude, it.longitude)
-        }!!
     }
 }

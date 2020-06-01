@@ -11,20 +11,21 @@ import com.example.drunkenautopilot.repository.RouteRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-class RouteViewModel(application: Application, episode: Episode) : AndroidViewModel(application) {
+class RouteViewModel(application: Application) : AndroidViewModel(application) {
 
     private val repository: RouteRepository
-    val route: LiveData<Route>
 
     init {
         val routeDao = EpisodeRoomDatabase.getDatabase(
             application
         ).routeDao()
         repository = RouteRepository(
-            routeDao,
-            episode
+            routeDao
         )
-        route = repository.getRoute
+    }
+
+    fun getRoute(episodeId: Long): LiveData<Route> {
+        return  repository.getRoute(episodeId)
     }
 
     fun insert(route: Route) = viewModelScope.launch(Dispatchers.IO) {

@@ -42,5 +42,8 @@
     <string name="distance_label">Distance till home</string>
     <string name="steps_total">Steps so far</string>
     <string name="language">en</string>
+    <string name="cancel">Cancel</string>
+    <string name="yes_cancel">Yes cancel</string>
+    <string name="no_go_home">No, get me home!</string>
 
 </resources>

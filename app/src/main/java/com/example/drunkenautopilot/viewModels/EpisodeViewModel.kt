@@ -34,7 +34,7 @@ class EpisodeViewModel(application: Application) : AndroidViewModel(application)
         repository.update(episode)
     }
 
-    fun delete(episodeId: Long) {
+    fun delete(episodeId: Long) = viewModelScope.launch(Dispatchers.IO) {
         repository.delete(episodeId)
     }
 }

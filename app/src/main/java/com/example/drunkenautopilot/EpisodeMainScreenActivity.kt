@@ -3,6 +3,7 @@ package com.example.drunkenautopilot
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.DialogInterface
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
@@ -20,13 +21,16 @@ import android.provider.Settings
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.Button
 import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelStore
 import androidx.preference.PreferenceManager
 import com.example.drunkenautopilot.models.Episode
 import com.example.drunkenautopilot.models.GoogleMapDTO
@@ -53,8 +57,8 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback, Senso
     var episode: Episode? = null
     private lateinit var route: Route
     private lateinit var episodeViewModel: EpisodeViewModel
-    private lateinit var routeViewModel: RouteViewModel
-    private lateinit var pointViewModel: PointViewModel
+    private var routeViewModel: RouteViewModel? = null
+    private var pointViewModel: PointViewModel? = null
     private lateinit var map: GoogleMap
     private lateinit var mapFragment: SupportMapFragment
     private lateinit var destination: Place
@@ -66,7 +70,8 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback, Senso
         currentLocation?.let {
             displayPoint()
             newCurrentLocation(it)
-            pointViewModel.addPoint(it)
+            pointViewModel?.let{ pvm ->
+                pvm.addPoint(it, route.id)}
 
             if (getDistanceFromLatLonInMeters(currentLocation!!, destination.latLng!!) < 50.0) {
                 // If you are near home
@@ -101,6 +106,10 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback, Senso
 
         episodeViewModel = ViewModelProvider(this).get(EpisodeViewModel::class.java)
 
+        episodeViewModel.allEpisodes.observe(this, Observer { yo ->
+            println("CurrentEpisodes: ${yo.size}")
+        })
+
         episodeViewModel.activeEpisode.observe(this, Observer { activeEpisode ->
             if (activeEpisode != null) {
                 if (episode != null && episode?.id != activeEpisode.id) {
@@ -108,23 +117,17 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback, Senso
                 }
                 episode = activeEpisode
                 routeViewModel = ViewModelProvider(
-                    this,
-                    RouteViewModelFactory(
-                        application,
-                        episode!!
-                    )
+                    this
                 ).get(RouteViewModel::class.java)
-                routeViewModel.route.observe(this, Observer { currentRoute ->
-                    route = currentRoute
-                    pointViewModel = ViewModelProvider(
-                        this,
-                        PointViewModelFactory(
-                            application,
-                            route
-                        )
-                    ).get(PointViewModel::class.java)
+                routeViewModel?.getRoute(activeEpisode.id)?.observe(this, Observer { currentRoute ->
+                    if (currentRoute != null) {
+                        route = currentRoute
+                        pointViewModel = ViewModelProvider(
+                            this
+                        ).get(PointViewModel::class.java)
+                    }
                 })
-            } else if (episode != null) {
+            } else if (episode == null) {
                 episode = Episode()
 
                 // Creates a new episode, route, and points view models along with
@@ -137,27 +140,19 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback, Senso
                                 "New Episode id is ${episode!!.id}"
                             )
                             routeViewModel = ViewModelProvider(
-                                this,
-                                RouteViewModelFactory(
-                                    application,
-                                    episode!!
-                                )
+                                this
                             ).get(RouteViewModel::class.java)
 
                             // Make a new route for this episode.
                             route = Route(episode!!.id)
-                            routeViewModel.insert(route).invokeOnCompletion { routeResult ->
+                            routeViewModel?.insert(route)?.invokeOnCompletion { routeResult ->
                                 if (routeResult == null) {
                                     Log.d(
                                         localClassName,
                                         "New Route id is ${route.id}"
                                     )
                                     pointViewModel = ViewModelProvider(
-                                        this,
-                                        PointViewModelFactory(
-                                            application,
-                                            route
-                                        )
+                                        this
                                     ).get(PointViewModel::class.java)
 
                                     getLastLocation()
@@ -195,6 +190,7 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback, Senso
 
         val startAudioButton: ImageButton = findViewById(R.id.btn_start_audio)
         val startVideoButton: ImageButton = findViewById(R.id.btn_start_video)
+        val cancelButton: Button = findViewById(R.id.btn_cancel)
 
         settings = PreferenceManager.getDefaultSharedPreferences(applicationContext)
         mapFragment = supportFragmentManager.findFragmentById(R.id.google_map) as SupportMapFragment
@@ -225,6 +221,19 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback, Senso
 
         startVideoButton.setOnClickListener {
             // TODO: Start a Video Recording
+        }
+
+        cancelButton.setOnClickListener {
+            AlertDialog.Builder(this)
+                .setTitle("Cancel navigation?")
+                .setMessage("Are you sure you would like to cancel? All route information will be deleted")
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .setPositiveButton(R.string.yes_cancel) { dialog, whichButton ->
+                    finish()
+                    episodeViewModel.delete(episode!!.id)
+                }
+                .setNegativeButton(R.string.no_go_home, null)
+                .show()
         }
 
         mapFragment.getMapAsync(this)
