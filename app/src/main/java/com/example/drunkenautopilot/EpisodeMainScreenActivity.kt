@@ -31,7 +31,6 @@ import androidx.core.app.ActivityCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.preference.PreferenceManager
-import com.example.drunkenautopilot.Common.Companion.getDistanceFromLatLonInMeters
 import com.example.drunkenautopilot.models.AudioRecording
 import com.example.drunkenautopilot.models.Episode
 import com.example.drunkenautopilot.models.GoogleMapDTO
@@ -90,7 +89,7 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback, Senso
                 }
             }
 
-            if (getDistanceFromLatLonInMeters(currentLocation!!, destination.latLng!!) < 50.0) {
+            if (Common.getDistanceFromLatLonInMeters(currentLocation!!, destination.latLng!!) < 50.0) {
                 // If you are near home
                 episode?.isFinished = true
                 episode?.let { it1 -> episodeViewModel.update(it1) }
@@ -544,6 +543,7 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback, Senso
         val stepsSensor = sensorManager?.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
 
         if (stepsSensor == null) {
+            stepsTextView.text = getString(R.string.no_step_counter)
             Toast.makeText(this, getString(R.string.no_step_counter), Toast.LENGTH_SHORT).show()
         } else {
             sensorManager?.registerListener(this, stepsSensor, SensorManager.SENSOR_DELAY_UI)

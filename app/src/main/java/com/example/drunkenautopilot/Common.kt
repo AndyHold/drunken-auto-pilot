@@ -19,7 +19,7 @@ class Common {
             return getDistanceFromLatLonInMeters(firstPoint.latitude, firstPoint.longitude, secondPoint.latitude, secondPoint.longitude)
         }
 
-        fun getDistanceFromLatLonInMeters(firstLat: Double, firstLon: Double, secondLat: Double, secondLon: Double): Double {
+        private fun getDistanceFromLatLonInMeters(firstLat: Double, firstLon: Double, secondLat: Double, secondLon: Double): Double {
             val earthsRadius = 6371000
             val latDifference = degreesToRadians(firstLat - secondLat)
             val lonDifference = degreesToRadians(firstLon - secondLon)

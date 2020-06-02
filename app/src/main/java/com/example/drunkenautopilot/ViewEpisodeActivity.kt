@@ -29,7 +29,6 @@ import com.google.android.gms.maps.model.PolylineOptions
 import java.io.File
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.LatLngBounds
-import com.example.drunkenautopilot.Common.Companion.getDistanceFromLatLonInMeters
 
 
 class ViewEpisodeActivity : AppCompatActivity(), OnMapReadyCallback {
@@ -147,7 +146,7 @@ class ViewEpisodeActivity : AppCompatActivity(), OnMapReadyCallback {
             var currentIndex = 1
 
             while (currentIndex < points.size) {
-                result += getDistanceFromLatLonInMeters(currentPoint, points[currentIndex])
+                result += Common.getDistanceFromLatLonInMeters(currentPoint, points[currentIndex])
                 currentPoint = points[currentIndex]
                 currentIndex++
             }

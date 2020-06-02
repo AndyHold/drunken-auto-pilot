@@ -51,13 +51,12 @@ class SplashScreen : AppCompatActivity(), ViewModelStoreOwner {
             if (!hasSettings) {
                 val intent = Intent(applicationContext, SettingsActivity::class.java)
                 startActivity(intent)
-//            } else if (activeEpisode == null){
-            } else {
+            } else if (activeEpisode == null){
                 val intent = Intent(applicationContext, MainActivity::class.java)
                 startActivity(intent)
-//            } else {
-//                val intent = Intent(applicationContext, EpisodeMainScreenActivity::class.java)
-//                startActivity(intent)
+            } else {
+                val intent = Intent(applicationContext, EpisodeMainScreenActivity::class.java)
+                startActivity(intent)
             }
         }, 2000)
         super.onResume()

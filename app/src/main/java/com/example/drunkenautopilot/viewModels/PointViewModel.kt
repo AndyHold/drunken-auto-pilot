@@ -7,10 +7,8 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.viewModelScope
 import com.example.drunkenautopilot.models.Point
-import com.example.drunkenautopilot.models.Route
 import com.example.drunkenautopilot.repository.EpisodeRoomDatabase
 import com.example.drunkenautopilot.repository.PointRepository
-import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 

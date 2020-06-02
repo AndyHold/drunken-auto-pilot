@@ -4,7 +4,6 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.viewModelScope
-import com.example.drunkenautopilot.models.Episode
 import com.example.drunkenautopilot.models.Route
 import com.example.drunkenautopilot.repository.EpisodeRoomDatabase
 import com.example.drunkenautopilot.repository.RouteRepository
