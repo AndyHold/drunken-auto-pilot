@@ -6,5 +6,5 @@
 Andrew Holden (ash102)
 
 ### Emulator used in development
-Name: Pixel_API_29
-SD Card: 512 MB (MUST HAVE THIS!)
+- Name: Pixel_API_29
+- SD Card: 512 MB (MUST HAVE THIS!)
