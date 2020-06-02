@@ -29,7 +29,7 @@ class AudioRecordingViewModel(application: Application) : AndroidViewModel(appli
     }
 
     fun insert(audioRecording: AudioRecording) = viewModelScope.launch(Dispatchers.IO) {
-        repository.insert(audioRecording)
+        audioRecording.id = repository.insert(audioRecording)
     }
 
     fun update(audioRecording: AudioRecording) = viewModelScope.launch(Dispatchers.IO) {

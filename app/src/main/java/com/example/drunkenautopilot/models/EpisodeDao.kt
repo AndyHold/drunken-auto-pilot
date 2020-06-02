@@ -12,6 +12,9 @@ interface EpisodeDao {
     @Query("SELECT * FROM episode WHERE isFinished = 0")
     fun getActiveEpisode(): LiveData<Episode?>
 
+    @Query("SELECT * FROM episode WHERE episode_id = :episodeId")
+    fun getSingleEpisode(episodeId: Long): LiveData<Episode?>
+
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(episode: Episode): Long
 

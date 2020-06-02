@@ -65,4 +65,14 @@
     <!-- All Episodes -->
     <string name="episode_date">Fecha de finalización</string>
     <string name="episode_steps">Número de pasos</string>
+
+    <!-- Single Episode -->
+    <string name="audio_recordings_title">Grabación de Audio</string>
+    <string name="distance_travelled_label">Distancia total</string>
+    <string name="steps_travelled_label">Pasos totales</string>
+    <string name="cannot_find_episode">Episodio no encontrado</string>
+    <string name="no_episodes">No hay episodios que mostrar</string>
+    <string name="could_not_find_episode">No se pudo encontrar el episodio solicitado</string>
+    <string name="distance_display_template">%.2fkm</string>
+
 </resources>

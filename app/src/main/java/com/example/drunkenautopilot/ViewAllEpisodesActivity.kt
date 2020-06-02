@@ -2,6 +2,7 @@ package com.example.drunkenautopilot
 
 import android.content.Intent
 import android.os.Bundle
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -16,6 +17,7 @@ class ViewAllEpisodesActivity: AppCompatActivity() {
 
     private lateinit var rvEpisodes: RecyclerView
     private lateinit var episodeViewModel: EpisodeViewModel
+    private lateinit var tvErrorMsg: TextView
     var episodes: MutableList<Episode> = mutableListOf()
     set(value) {
         field = value
@@ -36,8 +38,15 @@ class ViewAllEpisodesActivity: AppCompatActivity() {
         val decoration = DividerItemDecoration(this, layoutManager.orientation)
         rvEpisodes.addItemDecoration(decoration)
 
+        tvErrorMsg = findViewById(R.id.tv_error_message)
+
         episodeViewModel = ViewModelProvider(this).get(EpisodeViewModel::class.java)
         episodeViewModel.allEpisodes.observe(this, Observer { allEpisodes ->
+            if (allEpisodes.isEmpty()) {
+                tvErrorMsg.visibility = TextView.VISIBLE
+            } else {
+                tvErrorMsg.visibility = TextView.INVISIBLE
+            }
             episodes = allEpisodes.toMutableList()
         })
     }

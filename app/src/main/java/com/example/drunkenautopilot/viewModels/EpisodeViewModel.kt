@@ -26,6 +26,10 @@ class EpisodeViewModel(application: Application) : AndroidViewModel(application)
         activeEpisode = repository.activeEpisode
     }
 
+    fun getSingleEpisode(episodeId: Long) : LiveData<Episode?> {
+        return repository.getSingleEpisode(episodeId)
+    }
+
     fun insert(episode: Episode) = viewModelScope.launch(Dispatchers.IO) {
         episode.id = repository.insert(episode)
     }

@@ -10,7 +10,7 @@ interface AudioRecordingDao {
     fun getLiveAudioRecordingsForEpisode(episodeId: Long): LiveData<List<AudioRecording>>
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insertAudioRecording(audioRecording: AudioRecording)
+    suspend fun insertAudioRecording(audioRecording: AudioRecording): Long
 
     @Query("DELETE FROM audio_recording WHERE audio_recording_id = :audioRecordingId")
     fun deleteAudioRecording(audioRecordingId: Long)

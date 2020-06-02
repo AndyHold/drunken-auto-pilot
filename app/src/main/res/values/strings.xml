@@ -72,4 +72,13 @@
     <string name="episode_date">Date Completed</string>
     <string name="episode_steps">Number of Steps</string>
 
+<!-- Single Episode -->
+    <string name="audio_recordings_title">Audio Recordings</string>
+    <string name="distance_travelled_label">Total distance</string>
+    <string name="steps_travelled_label">Total steps</string>
+    <string name="cannot_find_episode">Episode not found</string>
+    <string name="no_episodes">There are no episodes to display</string>
+    <string name="could_not_find_episode">Could not find the requested episode</string>
+    <string name="distance_display_template">%.2fkm</string>
+
 </resources>

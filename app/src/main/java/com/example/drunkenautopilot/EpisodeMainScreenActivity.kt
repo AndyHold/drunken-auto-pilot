@@ -31,6 +31,7 @@ import androidx.core.app.ActivityCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.preference.PreferenceManager
+import com.example.drunkenautopilot.Common.Companion.getDistanceFromLatLonInMeters
 import com.example.drunkenautopilot.models.AudioRecording
 import com.example.drunkenautopilot.models.Episode
 import com.example.drunkenautopilot.models.GoogleMapDTO
@@ -52,10 +53,6 @@ import java.io.IOException
 import java.lang.IllegalStateException
 import java.util.*
 import kotlin.collections.ArrayList
-import kotlin.math.atan2
-import kotlin.math.cos
-import kotlin.math.sin
-import kotlin.math.sqrt
 import kotlin.properties.Delegates
 
 const val LOCATION_PERMISSION_ID = 42
@@ -93,14 +90,13 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback, Senso
                 }
             }
 
-            createNotifications()
             if (getDistanceFromLatLonInMeters(currentLocation!!, destination.latLng!!) < 50.0) {
                 // If you are near home
                 episode?.isFinished = true
                 episode?.let { it1 -> episodeViewModel.update(it1) }
-                mainHandler.removeCallbacksAndMessages(null) // stop all future updates
+                mainHandler.removeCallbacksAndMessages(null) // stop all future location updates
 
-                createNotifications()
+                createNotification()
 
                 Toast.makeText(
                     applicationContext,
@@ -307,6 +303,7 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback, Senso
                 .setIcon(android.R.drawable.ic_dialog_alert)
                 .setPositiveButton(R.string.yes_cancel) { _, _ ->
                     finish()
+                    mainHandler.removeCallbacksAndMessages(null) // stop all future location updates
                     route =
                         null // required for when the episode is cancelled just as the location is updated.
                     episodeViewModel.delete(episode!!.id)
@@ -335,7 +332,7 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback, Senso
             )
     }
 
-    private fun createNotifications() {
+    private fun createNotification() {
         notificationManager.notify(1234, builder.build())
     }
 
@@ -570,26 +567,6 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback, Senso
         }
     }
 
-    private fun getDistanceFromLatLonInMeters(firstPoint: Location, secondPoint: LatLng): Double {
-        val earthsRadius = 6371000
-        val latDifference = degreesToRadians(firstPoint.latitude - secondPoint.latitude)
-        val lonDifference = degreesToRadians(firstPoint.longitude - secondPoint.longitude)
-        val alpha =
-            sin(latDifference / 2) * sin(latDifference / 2) +
-                    cos(degreesToRadians(firstPoint.latitude)) * cos(
-                degreesToRadians(
-                    secondPoint.latitude
-                )
-            ) *
-                    sin(lonDifference / 2) * sin(lonDifference / 2)
-        val c = 2 * atan2(sqrt(alpha), sqrt(1 - alpha))
-        return earthsRadius * c
-    }
-
-    private fun degreesToRadians(deg: Double): Double {
-        return deg * (Math.PI / 180)
-    }
-
     private fun startRecording() {
         // Start audio recording here
         audioFilename = "${Date().time}.mp3"
@@ -623,7 +600,14 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback, Senso
 
                 val audioRecording = AudioRecording(audioFilename, episode!!.id)
 
-                audioRecordingViewModel?.insert(audioRecording)
+                audioRecordingViewModel?.insert(audioRecording)?.invokeOnCompletion { routeResult ->
+                    if (routeResult == null) {
+                        Log.d(
+                            localClassName,
+                            "New AudioRecording id is ${audioRecording.id}"
+                        )
+                    }
+                }
 
                 Toast.makeText(
                     applicationContext,

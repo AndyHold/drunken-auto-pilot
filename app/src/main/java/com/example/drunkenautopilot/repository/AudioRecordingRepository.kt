@@ -10,8 +10,8 @@ class AudioRecordingRepository(private val audioRecordingDao: AudioRecordingDao)
         return audioRecordingDao.getLiveAudioRecordingsForEpisode(episodeId)
     }
 
-    suspend fun insert(audioRecording: AudioRecording) {
-        audioRecordingDao.insertAudioRecording(audioRecording)
+    suspend fun insert(audioRecording: AudioRecording): Long {
+        return audioRecordingDao.insertAudioRecording(audioRecording)
     }
 
     fun delete(audioRecordingId: Long) {
