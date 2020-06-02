@@ -1,3 +1,10 @@
 # drunken-auto-pilot
 
-ash102 - SENG440 Assignment 2
+# SENG440 Assignment 2
+
+## Author
+Andrew Holden (ash102)
+
+## Emulator used in development
+    Name: Pixel_API_29
+    SD Card: 512 MB (MUST HAVE THIS!)
