@@ -1,5 +1,5 @@
 <resources>
-    <string name="map_key" translatable="false">AIzaSyBXnIOFjv_9K1FQhBnRIGMxcN3e6lb7qbk</string>
+    <string name="map_key" translatable="false">{Place API Key Here!}</string>
 
     <string name="app_name">Drunken Auto Pilot</string>
     <string name="title_home">Home</string>
