@@ -33,7 +33,7 @@ class AddressPreference : FragmentActivity(), OnMapReadyCallback {
 
         setContentView(R.layout.address_preference)
 
-        Places.initialize(applicationContext, resources.getString(R.string.map_key))
+        Places.initialize(applicationContext, resources.getString(R.string.google_api_key))
         settings = PreferenceManager.getDefaultSharedPreferences(applicationContext)
 
         mapFragment = supportFragmentManager.findFragmentById(R.id.google_map) as SupportMapFragment

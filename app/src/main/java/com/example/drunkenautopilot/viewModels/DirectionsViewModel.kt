@@ -20,7 +20,7 @@ class DirectionsViewModel(application: Application, private val screen: EpisodeM
 
     fun getDirections(location: Location, destination: LatLng) {
         val parameters = mapOf(
-            "key" to getApplication<Application>().getString(R.string.map_key),
+            "key" to getApplication<Application>().getString(R.string.google_api_key),
             "origin" to "${location.latitude},${location.longitude}",
             "destination" to "${destination.latitude},${destination.longitude}",
             "mode" to "walking",

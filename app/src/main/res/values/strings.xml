@@ -1,5 +1,5 @@
 <resources>
-    <string name="map_key" translatable="false">{Place API Key Here!}</string>
+    <string name="google_api_key" translatable="false">{Place API Key Here!}</string>
 
     <string name="app_name">Drunken Auto Pilot</string>
     <string name="title_home">Home</string>
