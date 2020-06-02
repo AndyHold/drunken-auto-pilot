@@ -158,7 +158,7 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback, Senso
             builder = Notification.Builder(this, channelId)
                 .setContentTitle(getString(R.string.notification_title))
                 .setContentText(getString(R.string.notification_content))
-                .setSmallIcon(R.drawable.ic_launcher_background)
+                .setSmallIcon(R.mipmap.ic_launcher)
                 .setLargeIcon(
                     BitmapFactory.decodeResource(
                         this.resources,
@@ -172,7 +172,7 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback, Senso
             builder = Notification.Builder(this)
                 .setContentTitle(getString(R.string.notification_title))
                 .setContentText(getString(R.string.notification_content))
-                .setSmallIcon(R.drawable.ic_launcher_background)
+                .setSmallIcon(R.mipmap.ic_launcher)
                 .setLargeIcon(
                     BitmapFactory.decodeResource(
                         this.resources,

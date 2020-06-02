@@ -7,7 +7,8 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.drunkenautopilot.R
 import com.example.drunkenautopilot.models.Episode
-import java.time.format.DateTimeFormatter
+import java.text.SimpleDateFormat
+import java.util.*
 
 class EpisodeAdapter (
     val context: Context,
@@ -16,8 +17,6 @@ class EpisodeAdapter (
 ) : RecyclerView.Adapter<EpisodeViewHolder>() {
 
     private var selectedIndex = RecyclerView.NO_POSITION
-    @SuppressLint("NewApi")
-    private var formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy")
 
     override fun getItemCount(): Int = episodes.size
 
@@ -37,9 +36,10 @@ class EpisodeAdapter (
         return holder
     }
 
-    @SuppressLint("NewApi")
     override fun onBindViewHolder(holder: EpisodeViewHolder, i: Int) {
-        holder.tvDate.text = formatter.format(episodes[i].date.toInstant())
+        val date = Date()
+        date.time = episodes[i].date.time
+        holder.tvDate.text = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(date)
         holder.tvSteps.text = episodes[i].steps.toString()
         holder.isActive = selectedIndex == i
     }

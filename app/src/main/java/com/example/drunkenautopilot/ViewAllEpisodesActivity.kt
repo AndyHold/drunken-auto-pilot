@@ -32,6 +32,7 @@ class ViewAllEpisodesActivity: AppCompatActivity() {
 
         rvEpisodes = findViewById(R.id.rv_episodes)
         val layoutManager = LinearLayoutManager(this)
+        rvEpisodes.layoutManager = layoutManager
         val decoration = DividerItemDecoration(this, layoutManager.orientation)
         rvEpisodes.addItemDecoration(decoration)
 
