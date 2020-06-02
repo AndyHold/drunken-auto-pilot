@@ -23,11 +23,6 @@ class SplashScreen : AppCompatActivity(), ViewModelStoreOwner {
         setContentView(R.layout.activity_splash_screen)
     }
 
-    override fun onStart() {
-        println("Started")
-        super.onStart()
-    }
-
     override fun onResume() {
 
         val animation = AnimationUtils.loadAnimation(this, R.anim.infinite_rotate)

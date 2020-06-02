@@ -620,8 +620,13 @@ class EpisodeMainScreenActivity : AppCompatActivity(), OnMapReadyCallback, Senso
                 stopRecording()
 
                 val file =
-                    File(Environment.getExternalStorageDirectory().absolutePath + "/${audioFilename}")
-                println(file.delete())
+                    File(Environment.getExternalStorageDirectory().absolutePath + "/$audioFilename")
+                if (file.delete()) {
+                    Log.d(
+                        localClassName,
+                        "Audio file deleted: $audioFilename"
+                    )
+                }
 
                 Toast.makeText(
                     applicationContext,
